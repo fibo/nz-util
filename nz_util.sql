@@ -39,11 +39,11 @@ BEGIN_PROC
   DECLARE
     object_name ALIAS FOR $1;
 
-    type_name VARCHAR(100);
+    class_name VARCHAR(100);
   BEGIN
 
-    SELECT objname INTO type_name
-    FROM _T_OBJECT
+    SELECT classname INTO class_name
+    FROM _T_OBJECT_CLASSES
     WHERE objid = (
       SELECT objclass
       FROM _T_OBJECT
@@ -74,8 +74,8 @@ BEGIN_PROC
     type_name VARCHAR(100);
   BEGIN
 
-    SELECT objname INTO type_name
-    FROM _T_OBJECT
+    SELECT classname INTO class_name
+    FROM _T_OBJECT_CLASSES
     WHERE objid = (
       SELECT objclass
       FROM _T_OBJECT
