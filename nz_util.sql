@@ -1,4 +1,208 @@
 
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE is_object(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    check_object INT2;
+  BEGIN
+
+    SELECT COUNT(objid) INTO check_object
+    FROM _T_OBJECT
+    WHERE objname = object_name AND
+    objdb = (
+      SELECT objid
+      FROM _T_OBJECT
+      WHERE objname = CURRENT_CATALOG
+    );
+
+    IF 1 = check_object THEN
+      RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100))
+  RETURNS VARCHAR(100)
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    type_name VARCHAR(100);
+  BEGIN
+
+    SELECT objname INTO type_name
+    FROM _T_OBJECT
+    WHERE objid = (
+      SELECT objclass
+      FROM _T_OBJECT
+      WHERE objname = object_name
+      AND objdb = (
+        SELECT objid
+        FROM _T_OBJECT
+        WHERE objname = CURRENT_CATALOG
+      )
+    );
+
+    RETURN type_name;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100), VARCHAR(100))
+  RETURNS VARCHAR(100)
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    catalog     ALIAS FOR $1;
+
+    object_name ALIAS FOR $2;
+
+    type_name VARCHAR(100);
+  BEGIN
+
+    SELECT objname INTO type_name
+    FROM _T_OBJECT
+    WHERE objid = (
+      SELECT objclass
+      FROM _T_OBJECT
+      WHERE objname = object_name
+      AND objdb = (
+        SELECT objid
+        FROM _T_OBJECT
+        WHERE objname = catalog
+      )
+    );
+
+    RETURN type_name;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE is_table(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    class_name VARCHAR(100);
+  BEGIN
+    SELECT INTO class_name util..class_of(object_name);
+
+    IF 'TABLE' = class_name THEN
+      RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE is_view(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    class_name VARCHAR(100);
+  BEGIN
+    SELECT INTO class_name util..class_of(object_name);
+
+    IF 'VIEW' = class_name THEN
+      RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE is_sequence(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    class_name VARCHAR(100);
+  BEGIN
+    SELECT INTO class_name util..class_of(object_name);
+
+    IF 'SEQUENCE' = class_name THEN
+      RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE is_group(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    class_name VARCHAR(100);
+  BEGIN
+    SELECT INTO class_name util..class_of('GLOBAL', object_name);
+
+    IF 'GROUP' = class_name THEN
+      RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE is_user(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    class_name VARCHAR(100);
+  BEGIN
+    SELECT INTO class_name util..class_of('GLOBAL', object_name);
+
+    IF 'USER' = class_name THEN
+      RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
 CREATE OR REPLACE PROCEDURE grant_object_privilege(VARCHAR(100), VARCHAR(1000), VARCHAR(1000))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
