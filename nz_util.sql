@@ -340,3 +340,27 @@ BEGIN_PROC
   END;
 END_PROC;
 
+-------------------------------------------------------------------------------
+
+DROP PROCEDURE users_of_group(VARCHAR(100));
+
+DROP TABLE tmp_users_of_group;
+
+CREATE TABLE tmp_users_of_group (
+  username VARCHAR(100)
+);
+
+CREATE PROCEDURE users_of_group(VARCHAR(100))
+  RETURNS REFTABLE(tmp_users_of_group)
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    group_name ALIAS FOR $1;
+  BEGIN
+    RETURN REFTABLE;
+  END;
+END_PROC;
+
+-------------------------------------------------------------------------------
+
