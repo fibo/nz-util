@@ -42,8 +42,8 @@ BEGIN_PROC
     class_name VARCHAR(100);
   BEGIN
 
-    SELECT classname INTO class_name
-    FROM _T_OBJECT_CLASSES
+    SELECT objname INTO class_name
+    FROM _T_OBJECT
     WHERE objid = (
       SELECT objclass
       FROM _T_OBJECT
@@ -74,8 +74,8 @@ BEGIN_PROC
     type_name VARCHAR(100);
   BEGIN
 
-    SELECT classname INTO class_name
-    FROM _T_OBJECT_CLASSES
+    SELECT objname INTO class_name
+    FROM _T_OBJECT
     WHERE objid = (
       SELECT objclass
       FROM _T_OBJECT
