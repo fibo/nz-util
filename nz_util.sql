@@ -55,7 +55,7 @@ BEGIN_PROC
       )
     );
 
-    RETURN type_name;
+    RETURN class_name;
   END;
 END_PROC;
 
@@ -71,7 +71,7 @@ BEGIN_PROC
 
     object_name ALIAS FOR $2;
 
-    type_name VARCHAR(100);
+    class_name VARCHAR(100);
   BEGIN
 
     SELECT objname INTO class_name
@@ -87,7 +87,7 @@ BEGIN_PROC
       )
     );
 
-    RETURN type_name;
+    RETURN class_name;
   END;
 END_PROC;
 
