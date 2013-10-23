@@ -6,6 +6,14 @@ Netezza utility functions
 Installation
 ------------
 
+## Download the code
+
+If you are on a Linux box (for example the Netezza frontend itself), you can try with this command
+
+    wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
+
+## Install utilities
+
     $ nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
     $ nzsql -u admin -d util -f nz_util.sql
 
@@ -41,5 +49,4 @@ Utilities
 ## create_group_execute(VARCHAR(100))
 
 ## users_of_group(VARCHAR(100))
-
 
