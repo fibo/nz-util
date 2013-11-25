@@ -17,6 +17,28 @@ If you are on a Linux box (for example the Netezza frontend itself), you can try
     $ nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
     $ nzsql -u admin -d util -f nz_util.sql
 
+Development
+-----------
+
+## Generate documentation
+
+Install docco
+
+    npm install docco -g
+
+Create annotated sources
+
+    mkdir docs
+    docco -o docs nz_util.sql
+
+Install marked
+
+    npm install docco -g
+
+Generate index.html from README.md
+
+    more README.md | marked -o docs/index.html
+
 Utilities
 ---------
 
