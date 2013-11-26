@@ -64,7 +64,8 @@ BEGIN_PROC
     WHERE objid = (
       SELECT objclass
       FROM _T_OBJECT
-      WHERE objname = object_name
+      --* *object_name* is not case sensitive
+      WHERE objname = UPPER(object_name)
       AND objdb = (
         SELECT objid
         FROM _T_OBJECT
@@ -75,6 +76,10 @@ BEGIN_PROC
     RETURN class_name;
   END;
 END_PROC;
+
+--
+--## class_of(VARCHAR(100), VARCHAR(100))
+--
 
 CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100), VARCHAR(100))
   RETURNS VARCHAR(100)
@@ -94,7 +99,8 @@ BEGIN_PROC
     WHERE objid = (
       SELECT objclass
       FROM _T_OBJECT
-      WHERE objname = object_name
+      --* *object_name* is not case sensitive
+      WHERE objname = UPPER(object_name)
       AND objdb = (
         SELECT objid
         FROM _T_OBJECT
@@ -245,6 +251,10 @@ BEGIN_PROC
   END;
 END_PROC;
 
+--
+--## create_group(VARCHAR(100))
+--
+
 CREATE OR REPLACE PROCEDURE create_group(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -252,11 +262,21 @@ AS
 BEGIN_PROC
   DECLARE
     catalog NAME := CURRENT_CATALOG;
-    group_name            ALIAS FOR $1;
+
+    group_name ALIAS FOR $1;
+
+    group_exists BOOLEAN;
   BEGIN
-    /* Avoid creating groups in reserved catalogs */
+    --* Avoids creating groups in reserved catalogs
     IF 'SYSTEM' = catalog THEN
-      RAISE EXCEPTION 'Reserved catalog: %', catalog;
+      RAISE EXCEPTION '% is a reserved catalog', catalog;
+    END IF;
+
+    --* checks that group does not exists yet
+    group_exists := util..is_group(group_name);
+
+    IF group_exists THEN
+      RAISE EXCEPTION 'group % already exists', group_name;
     END IF;
 
     EXECUTE IMMEDIATE 'CREATE GROUP ' || group_name;
@@ -318,7 +338,7 @@ END_PROC;
 -- ```
 --
 
-CREATE OR REPLACE PROCEDURE create_group_system_view(VARCHAR(100))
+CREATE OR REPLACE PROCEDURE create_group_systemview(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
 AS
@@ -363,6 +383,8 @@ BEGIN_PROC
   END;
 END_PROC;
 
+/*
+
 DROP PROCEDURE users_of_group(VARCHAR(100));
 
 DROP TABLE tmp_users_of_group;
@@ -382,6 +404,8 @@ BEGIN_PROC
     RETURN REFTABLE;
   END;
 END_PROC;
+
+*/
 
 --# Development
 --

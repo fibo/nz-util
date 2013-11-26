@@ -19,6 +19,12 @@ If you are on a Linux box (for example the Netezza frontend itself), you can try
 
 # Utilities
 
+
+## class_of(VARCHAR(100), VARCHAR(100))
+
+
+## create_group(VARCHAR(100))
+
  # create_group_system_view
 
  Create a group that can query system views
