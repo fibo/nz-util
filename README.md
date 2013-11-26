@@ -1,10 +1,10 @@
 nz-util
 =======
 
+
 Netezza utility functions
 
-Installation
-------------
+# Installation
 
 ## Download the code
 
@@ -14,13 +14,24 @@ If you are on a Linux box (for example the Netezza frontend itself), you can try
 
 ## Install utilities
 
-    $ nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
-    $ nzsql -u admin -d util -f nz_util.sql
+   $ nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
+   $ nzsql -u admin -d util -f nz_util.sql
 
-Development
------------
+# Utilities
 
-## Generate documentation
+ # create_group_system_view
+
+ Create a group that can query system views
+
+ ```sql
+ util..create_group_system_view('GROUP_NAME')
+ ```
+
+# Development
+
+Generate README.md
+
+    $ grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
 
 Install docco
 
@@ -29,46 +40,6 @@ Install docco
 Create annotated sources
 
     mkdir docs
-    docco -o docs nz_util.sql
-
-Install marked
-
-    npm install docco -g
-
-Generate index.html from README.md
-
-    more README.md | marked -o docs/index.html
-
-Utilities
----------
-
-## is_object(VARCHAR(100))
-
-## class_of(VARCHAR(100))
-
-## class_of(VARCHAR(100), VARCHAR(100))
-
-## is_table(VARCHAR(100))
-
-## is_view(VARCHAR(100))
-
-## is_sequence(VARCHAR(100))
-
-## is_group(VARCHAR(100))
-
-## is_user(VARCHAR(100))
-
-## grant_object_privilege(VARCHAR(100), VARCHAR(1000), VARCHAR(1000))
-
-## grant_admin_privilege(VARCHAR(100), VARCHAR(1000))
-
-## create_group(VARCHAR(100))
-
-## create_group_readonly(VARCHAR(100))
-
-## create_group_readwrite(VARCHAR(100))
-
-## create_group_execute(VARCHAR(100))
-
-## users_of_group(VARCHAR(100))
+    $ docco -o docs nz_util.sql
+    $ mv docs/nz_util.sql docs/index.html
 

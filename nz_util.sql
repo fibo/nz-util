@@ -1,5 +1,24 @@
-
--------------------------------------------------------------------------------
+--nz-util
+--=======
+--
+--
+--Netezza utility functions
+--
+--# Installation
+--
+--## Download the code
+--
+--If you are on a Linux box (for example the Netezza frontend itself), you can try with this command
+--
+--    wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
+--
+--## Install utilities
+--
+--   $ nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
+--   $ nzsql -u admin -d util -f nz_util.sql
+--
+--# Utilities
+--
 
 CREATE OR REPLACE PROCEDURE is_object(VARCHAR(100))
   RETURNS BOOLEAN
@@ -29,8 +48,6 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
 CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100))
   RETURNS VARCHAR(100)
   LANGUAGE NZPLSQL
@@ -58,8 +75,6 @@ BEGIN_PROC
     RETURN class_name;
   END;
 END_PROC;
-
--------------------------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100), VARCHAR(100))
   RETURNS VARCHAR(100)
@@ -91,8 +106,6 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
 CREATE OR REPLACE PROCEDURE is_table(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -112,8 +125,6 @@ BEGIN_PROC
     RETURN FALSE;
   END;
 END_PROC;
-
--------------------------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE is_view(VARCHAR(100))
   RETURNS BOOLEAN
@@ -135,8 +146,6 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
 CREATE OR REPLACE PROCEDURE is_sequence(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -156,8 +165,6 @@ BEGIN_PROC
     RETURN FALSE;
   END;
 END_PROC;
-
--------------------------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE is_group(VARCHAR(100))
   RETURNS BOOLEAN
@@ -179,8 +186,6 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
 CREATE OR REPLACE PROCEDURE is_user(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -200,8 +205,6 @@ BEGIN_PROC
     RETURN FALSE;
   END;
 END_PROC;
-
--------------------------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE grant_object_privilege(VARCHAR(100), VARCHAR(1000), VARCHAR(1000))
   RETURNS BOOLEAN
@@ -224,8 +227,6 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
 CREATE OR REPLACE PROCEDURE grant_admin_privilege(VARCHAR(100), VARCHAR(1000))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -244,8 +245,6 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
 CREATE OR REPLACE PROCEDURE create_group(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -255,7 +254,7 @@ BEGIN_PROC
     catalog NAME := CURRENT_CATALOG;
     group_name            ALIAS FOR $1;
   BEGIN
-    -- Avoid creating groups in reserved catalogs
+    /* Avoid creating groups in reserved catalogs */
     IF 'SYSTEM' = catalog THEN
       RAISE EXCEPTION 'Reserved catalog: %', catalog;
     END IF;
@@ -265,8 +264,6 @@ BEGIN_PROC
     RETURN TRUE;
   END;
 END_PROC;
-
--------------------------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE create_group_readonly(VARCHAR(100))
   RETURNS BOOLEAN
@@ -287,8 +284,6 @@ BEGIN_PROC
     RETURN TRUE;
   END;
 END_PROC;
-
--------------------------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE create_group_readwrite(VARCHAR(100))
   RETURNS BOOLEAN
@@ -314,7 +309,35 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
+-- # create_group_system_view
+--
+-- Create a group that can query system views
+--
+-- ```sql
+-- util..create_group_system_view('GROUP_NAME')
+-- ```
+--
+
+CREATE OR REPLACE PROCEDURE create_group_system_view(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    group_name ALIAS FOR $1;
+
+    object_privilege_list VARCHAR(1000) := ' LIST, SELECT ';
+
+    object_list           VARCHAR(1000) := ' SYSTEM VIEW ';
+
+  BEGIN
+    CALL util..create_group(group_name);
+
+    CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
+
+    RETURN TRUE;
+  END;
+END_PROC;
 
 CREATE OR REPLACE PROCEDURE create_group_execute(VARCHAR(100))
   RETURNS BOOLEAN
@@ -340,8 +363,6 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
 DROP PROCEDURE users_of_group(VARCHAR(100));
 
 DROP TABLE tmp_users_of_group;
@@ -362,5 +383,19 @@ BEGIN_PROC
   END;
 END_PROC;
 
--------------------------------------------------------------------------------
-
+--# Development
+--
+--Generate README.md
+--
+--    $ grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
+--
+--Install docco
+--
+--    npm install docco -g
+--
+--Create annotated sources
+--
+--    mkdir docs
+--    $ docco -o docs nz_util.sql
+--    $ mv docs/nz_util.sql docs/index.html
+--
