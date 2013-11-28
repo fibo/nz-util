@@ -13,13 +13,26 @@ If you are on a Linux box (for example the Netezza frontend itself), you can try
 wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
 ```
 
-## Install utilities
+## Install
 
 ```bash
 nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
 nzsql -u admin -d util -f nz_util.sql
 ```
 
+## Update
+
+Check current version
+
+```bash
+nzsql -u admin -d util -c '\dd util'
+```
+
+Update *Netezza utilities*.
+
+```bash
+nzsql -u admin -d util -f nz_util.sql
+```
 # Utilities
 
 
@@ -39,52 +52,63 @@ CALL util..class_of('FOO');
 ## Groups and grants management
 
 
-### create_group
+### create_or_update_group
 
-Create a group safely.
-
-```sql
-CALL util..create_group('GROUP_NAME');
-```
-
-* Avoids creating groups in reserved catalogs
-* checks that group does not exists yet
-
-### create_group_readonly
-
-Create a group that can read and **can not** modify data.
+Create a group safely. If group already exists, it will be granted to list current catalog.
+Please note that since Netezza grants permissions contextually to current catalog,
+you need to connect manually to catalog.
 
 ```sql
-CALL util..create_group_readonly('GROUP_NAME');
+\c mydatabase
+CALL util..create_or_update_group('GROUP_NAME');
 ```
 
+* avoids creating groups in reserved catalogs
+* checks if group already exists
 
-### create_group_readwrite
+### grant_readonly
 
-Create a group that can read and write data.
+Grant a group to read data in current catalog.
 
 ```sql
-CALL util..create_group_readwrite('GROUP_NAME');
+\c mydatabase
+CALL util..grant_readonly('GROUP_NAME');
 ```
 
+* creates group if it does not exists
 
-### create_group_system_view
+### grant_readwrite
 
-Create a group that can read system views.
+Grant a group to read and write data in current catalog.
 
 ```sql
-CALL util..create_group_system_view('GROUP_NAME');
+\c mydatabase
+CALL util..grant_readwrite('GROUP_NAME');
 ```
 
+* creates group if it does not exists
 
-### create_group_execute
+### grant_systemview
 
-Create a group that can edit and call stored procedures.
+Grant a group to read system views in current catalog.
 
 ```sql
-CALL util..create_group_execute('GROUP_NAME');
+\c mydatabase
+CALL util..grant_systemview('GROUP_NAME');
 ```
 
+* creates group if it does not exists
+
+### grant_execute
+
+Grant a group to edit and call stored procedures in current catalog.
+
+```sql
+\c mydatabase
+CALL util..grant_execute('GROUP_NAME');
+```
+
+* creates group if it does not exists
 # Development
 
 ## Generate docs

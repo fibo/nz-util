@@ -13,19 +13,37 @@
 --wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
 --```
 --
---## Install utilities
+--## Install
 --
 --```bash
 --nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
 --nzsql -u admin -d util -f nz_util.sql
 --```
 --
+--## Update
+--
+--Check current version
+--
+--```bash
+--nzsql -u admin -d util -c '\dd util'
+--```
+--
+--Update *Netezza utilities*.
+--
+--```bash
+--nzsql -u admin -d util -f nz_util.sql
+--```
+
 --# Utilities
 --
+
+/* Update version */
+COMMENT ON DATABASE util IS 'Version 2013-11-28, http://www.g14n.info/nz-util/';
 
 --
 --## Type checking
 --
+
 
 /* this procedures is private by now */
 
@@ -287,16 +305,19 @@ BEGIN_PROC
 END_PROC;
 
 --
---### create_group
+--### create_or_update_group
 --
---Create a group safely.
+--Create a group safely. If group already exists, it will be granted to list current catalog.
+--Please note that since Netezza grants permissions contextually to current catalog,
+--you need to connect manually to catalog.
 --
 --```sql
---CALL util..create_group('GROUP_NAME');
+--\c mydatabase
+--CALL util..create_or_update_group('GROUP_NAME');
 --```
 --
 
-CREATE OR REPLACE PROCEDURE create_group(VARCHAR(100))
+CREATE OR REPLACE PROCEDURE create_or_update_group(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
 AS
@@ -308,35 +329,38 @@ BEGIN_PROC
 
     group_exists BOOLEAN;
   BEGIN
---* Avoids creating groups in reserved catalogs
+--* avoids creating groups in reserved catalogs
     IF 'SYSTEM' = catalog THEN
       RAISE EXCEPTION '% is a reserved catalog', catalog;
     END IF;
 
---* checks that group does not exists yet
+--* checks if group already exists
     group_exists := util..is_group(group_name);
 
     IF group_exists THEN
-      RAISE EXCEPTION 'group % already exists', group_name;
+      EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
+    ELSE
+      EXECUTE IMMEDIATE 'CREATE GROUP ' || group_name;
+      EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
     END IF;
 
-    EXECUTE IMMEDIATE 'CREATE GROUP ' || group_name;
 
     RETURN TRUE;
   END;
 END_PROC;
 
 --
---### create_group_readonly
+--### grant_readonly
 --
---Create a group that can read and **can not** modify data.
+--Grant a group to read data in current catalog.
 --
 --```sql
---CALL util..create_group_readonly('GROUP_NAME');
+--\c mydatabase
+--CALL util..grant_readonly('GROUP_NAME');
 --```
 --
 
-CREATE OR REPLACE PROCEDURE create_group_readonly(VARCHAR(100))
+CREATE OR REPLACE PROCEDURE grant_readonly(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
 AS
@@ -348,7 +372,8 @@ BEGIN_PROC
 
     object_list           VARCHAR(1000) := ' TABLE, VIEW, SEQUENCE ';
   BEGIN
-    CALL util..create_group(group_name);
+--* creates group if it does not exists
+    CALL util..create_or_update_group(group_name);
 
     CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
 
@@ -357,16 +382,17 @@ BEGIN_PROC
 END_PROC;
 
 --
---### create_group_readwrite
+--### grant_readwrite
 --
---Create a group that can read and write data.
+--Grant a group to read and write data in current catalog.
 --
 --```sql
---CALL util..create_group_readwrite('GROUP_NAME');
+--\c mydatabase
+--CALL util..grant_readwrite('GROUP_NAME');
 --```
 --
 
-CREATE OR REPLACE PROCEDURE create_group_readwrite(VARCHAR(100))
+CREATE OR REPLACE PROCEDURE grant_readwrite(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
 AS
@@ -380,7 +406,8 @@ BEGIN_PROC
 
     admin_privilege_list  VARCHAR(1000) := ' CREATE TABLE, CREATE SEQUENCE, CREATE VIEW, CREATE EXTERNAL TABLE ';
   BEGIN
-    CALL util..create_group(group_name);
+--* creates group if it does not exists
+    CALL util..create_or_update_group(group_name);
 
     CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
 
@@ -391,16 +418,17 @@ BEGIN_PROC
 END_PROC;
 
 --
---### create_group_system_view
+--### grant_systemview
 --
---Create a group that can read system views.
+--Grant a group to read system views in current catalog.
 --
 --```sql
---CALL util..create_group_system_view('GROUP_NAME');
+--\c mydatabase
+--CALL util..grant_systemview('GROUP_NAME');
 --```
 --
 
-CREATE OR REPLACE PROCEDURE create_group_systemview(VARCHAR(100))
+CREATE OR REPLACE PROCEDURE grant_systemview(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
 AS
@@ -413,7 +441,8 @@ BEGIN_PROC
     object_list           VARCHAR(1000) := ' SYSTEM VIEW ';
 
   BEGIN
-    CALL util..create_group(group_name);
+--* creates group if it does not exists
+    CALL util..create_or_update_group(group_name);
 
     CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
 
@@ -422,16 +451,17 @@ BEGIN_PROC
 END_PROC;
 
 --
---### create_group_execute
+--### grant_execute
 --
---Create a group that can edit and call stored procedures.
+--Grant a group to edit and call stored procedures in current catalog.
 --
 --```sql
---CALL util..create_group_execute('GROUP_NAME');
+--\c mydatabase
+--CALL util..grant_execute('GROUP_NAME');
 --```
 --
 
-CREATE OR REPLACE PROCEDURE create_group_execute(VARCHAR(100))
+CREATE OR REPLACE PROCEDURE grant_execute(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
 AS
@@ -445,7 +475,8 @@ BEGIN_PROC
 
     admin_privilege_list  VARCHAR(1000) := ' CREATE FUNCTION, CREATE PROCEDURE ';
   BEGIN
-    CALL util..create_group(group_name);
+--* creates group if it does not exists
+    CALL util..create_or_update_group(group_name);
 
     CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
 
@@ -516,4 +547,3 @@ END_PROC;
 --git subtree --prefix docs push origin gh-pages
 --```
 --
-
