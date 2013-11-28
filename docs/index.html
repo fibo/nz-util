@@ -3,31 +3,49 @@
 <h1 id="installation">Installation</h1>
 <h2 id="download-the-code">Download the code</h2>
 <p>If you are on a Linux box (for example the Netezza frontend itself), you can try with this command</p>
-<pre><code>wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql</code></pre>
+<pre><code class="lang-bash">wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql</code></pre>
 <h2 id="install-utilities">Install utilities</h2>
-<p>   $ nzsql -u admin -d system -c &#39;CREATE DATABASE util COLLECT HISTORY OFF&#39;
-   $ nzsql -u admin -d util -f nz_util.sql</p>
+<pre><code class="lang-bash">nzsql -u admin -d system -c &#39;CREATE DATABASE util COLLECT HISTORY OFF&#39;
+nzsql -u admin -d util -f nz_util.sql</code></pre>
 <h1 id="utilities">Utilities</h1>
-<h2 id="class_of-varchar-100-varchar-100-">class_of(VARCHAR(100), VARCHAR(100))</h2>
-<h2 id="create_group-varchar-100-">create_group(VARCHAR(100))</h2>
-<h1 id="create_group_system_view">create_group_system_view</h1>
-<p> Create a group that can query system views</p>
-<pre><code class="lang-sql"> util..create_group_system_view(&#39;GROUP_NAME&#39;)</code></pre>
+<h2 id="type-checking">Type checking</h2>
+<h2 id="class_of">class_of</h2>
+<p>Return the object class.</p>
+<pre><code class="lang-sql">CALL util..class_of(&#39;FOO&#39;);</code></pre>
+<ul>
+<li><em>object_name</em> is not case sensitive</li>
+</ul>
+<h2 id="groups-and-grants-management">Groups and grants management</h2>
+<h3 id="create_group">create_group</h3>
+<p>Create a group safely.</p>
+<pre><code class="lang-sql">CALL util..create_group(&#39;GROUP_NAME&#39;);</code></pre>
+<ul>
+<li>Avoids creating groups in reserved catalogs</li>
+<li>checks that group does not exists yet</li>
+</ul>
+<h3 id="create_group_readonly">create_group_readonly</h3>
+<p>Create a group that can read and <strong>can not</strong> modify data.</p>
+<pre><code class="lang-sql">CALL util..create_group_readonly(&#39;GROUP_NAME&#39;);</code></pre>
+<h3 id="create_group_readwrite">create_group_readwrite</h3>
+<p>Create a group that can read and write data.</p>
+<pre><code class="lang-sql">CALL util..create_group_readwrite(&#39;GROUP_NAME&#39;);</code></pre>
+<h3 id="create_group_system_view">create_group_system_view</h3>
+<p>Create a group that can read system views.</p>
+<pre><code class="lang-sql">CALL util..create_group_system_view(&#39;GROUP_NAME&#39;);</code></pre>
+<h3 id="create_group_execute">create_group_execute</h3>
+<p>Create a group that can edit and call stored procedures.</p>
+<pre><code class="lang-sql">CALL util..create_group_execute(&#39;GROUP_NAME&#39;);</code></pre>
 <h1 id="development">Development</h1>
 <h2 id="generate-docs">Generate docs</h2>
-<p>The following command work also from Git shell on Windows.</p>
+<p>Documentation is generated extracting comments with a <code>--</code> in the beginning of line.</p>
+<pre><code class="lang-sql">/* This kind of comments will be ignored */</code></pre>
+<p>The following commands work also from Git shell on Windows.</p>
 <h3 id="generate-readme-md">Generate README.md</h3>
 <pre><code class="lang-bash">grep -E &#39;^--&#39; nz_util.sql | sed -e &#39;s/--//&#39; &gt; README.md</code></pre>
 <h3 id="generate-html-docs">Generate html docs</h3>
-<p>Install <em>marked</em> globally (only once).</p>
+<p>Install <a href="https://github.com/chjj/marked">marked</a> globally <strong>only once</strong>.</p>
 <pre><code class="lang-bash">npm install marked -g</code></pre>
-<p>Create index.html from README.md</p>
+<p>Create docs/index.html from README.md</p>
 <pre><code class="lang-bash">marked -o docs/index.html README.md</code></pre>
 <p>Update site</p>
-<pre><code class="lang-bash">git subtree --prefix docs pull origin gh-pages</code></pre>
-<p>Install docco</p>
-<pre><code>npm install docco -g</code></pre>
-<p>Create annotated sources</p>
-<pre><code>mkdir docs
-$ docco -o docs nz_util.sql
-$ mv docs/nz_util.sql docs/index.html</code></pre>
+<pre><code class="lang-bash">git subtree --prefix docs push origin gh-pages</code></pre>

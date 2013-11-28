@@ -1,7 +1,6 @@
 nz-util
 =======
 
-
 Netezza utility functions
 
 # Installation
@@ -10,34 +9,92 @@ Netezza utility functions
 
 If you are on a Linux box (for example the Netezza frontend itself), you can try with this command
 
-    wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
+```bash
+wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
+```
 
 ## Install utilities
 
-   $ nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
-   $ nzsql -u admin -d util -f nz_util.sql
+```bash
+nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
+nzsql -u admin -d util -f nz_util.sql
+```
 
 # Utilities
 
 
-## class_of(VARCHAR(100), VARCHAR(100))
+## Type checking
 
 
-## create_group(VARCHAR(100))
+## class_of
 
- # create_group_system_view
+Return the object class.
 
- Create a group that can query system views
+```sql
+CALL util..class_of('FOO');
+```
 
- ```sql
- util..create_group_system_view('GROUP_NAME')
- ```
+* *object_name* is not case sensitive
+
+## Groups and grants management
+
+
+### create_group
+
+Create a group safely.
+
+```sql
+CALL util..create_group('GROUP_NAME');
+```
+
+* Avoids creating groups in reserved catalogs
+* checks that group does not exists yet
+
+### create_group_readonly
+
+Create a group that can read and **can not** modify data.
+
+```sql
+CALL util..create_group_readonly('GROUP_NAME');
+```
+
+
+### create_group_readwrite
+
+Create a group that can read and write data.
+
+```sql
+CALL util..create_group_readwrite('GROUP_NAME');
+```
+
+
+### create_group_system_view
+
+Create a group that can read system views.
+
+```sql
+CALL util..create_group_system_view('GROUP_NAME');
+```
+
+
+### create_group_execute
+
+Create a group that can edit and call stored procedures.
+
+```sql
+CALL util..create_group_execute('GROUP_NAME');
+```
 
 # Development
 
 ## Generate docs
 
-The following command work also from Git shell on Windows.
+Documentation is generated extracting comments with a `--` in the beginning of line.
+
+```sql
+/* This kind of comments will be ignored */
+```
+The following commands work also from Git shell on Windows.
 
 ### Generate README.md
 
@@ -47,13 +104,13 @@ grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
 
 ### Generate html docs
 
-Install *marked* globally (only once).
+Install [marked](https://github.com/chjj/marked) globally **only once**.
 
 ```bash
 npm install marked -g
 ```
 
-Create index.html from README.md
+Create docs/index.html from README.md
 
 ```bash
 marked -o docs/index.html README.md
@@ -62,16 +119,6 @@ marked -o docs/index.html README.md
 Update site
 
 ```bash
-git subtree --prefix docs pull origin gh-pages
+git subtree --prefix docs push origin gh-pages
 ```
-
-Install docco
-
-    npm install docco -g
-
-Create annotated sources
-
-    mkdir docs
-    $ docco -o docs nz_util.sql
-    $ mv docs/nz_util.sql docs/index.html
 

@@ -1,7 +1,6 @@
 --nz-util
 --=======
 --
---
 --Netezza utility functions
 --
 --# Installation
@@ -10,15 +9,25 @@
 --
 --If you are on a Linux box (for example the Netezza frontend itself), you can try with this command
 --
---    wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
+--```bash
+--wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
+--```
 --
 --## Install utilities
 --
---   $ nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
---   $ nzsql -u admin -d util -f nz_util.sql
+--```bash
+--nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
+--nzsql -u admin -d util -f nz_util.sql
+--```
 --
 --# Utilities
 --
+
+--
+--## Type checking
+--
+
+/* this procedures is private by now */
 
 CREATE OR REPLACE PROCEDURE is_object(VARCHAR(100))
   RETURNS BOOLEAN
@@ -48,6 +57,16 @@ BEGIN_PROC
   END;
 END_PROC;
 
+--
+--## class_of
+--
+--Return the object class.
+--
+--```sql
+--CALL util..class_of('FOO');
+--```
+--
+
 CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100))
   RETURNS VARCHAR(100)
   LANGUAGE NZPLSQL
@@ -64,7 +83,7 @@ BEGIN_PROC
     WHERE objid = (
       SELECT objclass
       FROM _T_OBJECT
-      --* *object_name* is not case sensitive
+--* *object_name* is not case sensitive
       WHERE objname = UPPER(object_name)
       AND objdb = (
         SELECT objid
@@ -77,9 +96,7 @@ BEGIN_PROC
   END;
 END_PROC;
 
---
---## class_of(VARCHAR(100), VARCHAR(100))
---
+/* this procedures is private by now */
 
 CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100), VARCHAR(100))
   RETURNS VARCHAR(100)
@@ -112,6 +129,8 @@ BEGIN_PROC
   END;
 END_PROC;
 
+/* this procedures is private by now */
+
 CREATE OR REPLACE PROCEDURE is_table(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -131,6 +150,8 @@ BEGIN_PROC
     RETURN FALSE;
   END;
 END_PROC;
+
+/* this procedures is private by now */
 
 CREATE OR REPLACE PROCEDURE is_view(VARCHAR(100))
   RETURNS BOOLEAN
@@ -152,6 +173,8 @@ BEGIN_PROC
   END;
 END_PROC;
 
+/* this procedures is private by now */
+
 CREATE OR REPLACE PROCEDURE is_sequence(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -171,6 +194,8 @@ BEGIN_PROC
     RETURN FALSE;
   END;
 END_PROC;
+
+/* this procedures is private by now */
 
 CREATE OR REPLACE PROCEDURE is_group(VARCHAR(100))
   RETURNS BOOLEAN
@@ -192,6 +217,8 @@ BEGIN_PROC
   END;
 END_PROC;
 
+/* this procedures is private by now */
+
 CREATE OR REPLACE PROCEDURE is_user(VARCHAR(100))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -211,6 +238,12 @@ BEGIN_PROC
     RETURN FALSE;
   END;
 END_PROC;
+
+--
+--## Groups and grants management
+--
+
+/* grant_object_privilege is private */
 
 CREATE OR REPLACE PROCEDURE grant_object_privilege(VARCHAR(100), VARCHAR(1000), VARCHAR(1000))
   RETURNS BOOLEAN
@@ -233,6 +266,8 @@ BEGIN_PROC
   END;
 END_PROC;
 
+/* grant_admin_privilege is private */
+
 CREATE OR REPLACE PROCEDURE grant_admin_privilege(VARCHAR(100), VARCHAR(1000))
   RETURNS BOOLEAN
   LANGUAGE NZPLSQL
@@ -252,7 +287,13 @@ BEGIN_PROC
 END_PROC;
 
 --
---## create_group(VARCHAR(100))
+--### create_group
+--
+--Create a group safely.
+--
+--```sql
+--CALL util..create_group('GROUP_NAME');
+--```
 --
 
 CREATE OR REPLACE PROCEDURE create_group(VARCHAR(100))
@@ -267,12 +308,12 @@ BEGIN_PROC
 
     group_exists BOOLEAN;
   BEGIN
-    --* Avoids creating groups in reserved catalogs
+--* Avoids creating groups in reserved catalogs
     IF 'SYSTEM' = catalog THEN
       RAISE EXCEPTION '% is a reserved catalog', catalog;
     END IF;
 
-    --* checks that group does not exists yet
+--* checks that group does not exists yet
     group_exists := util..is_group(group_name);
 
     IF group_exists THEN
@@ -284,6 +325,16 @@ BEGIN_PROC
     RETURN TRUE;
   END;
 END_PROC;
+
+--
+--### create_group_readonly
+--
+--Create a group that can read and **can not** modify data.
+--
+--```sql
+--CALL util..create_group_readonly('GROUP_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE create_group_readonly(VARCHAR(100))
   RETURNS BOOLEAN
@@ -304,6 +355,16 @@ BEGIN_PROC
     RETURN TRUE;
   END;
 END_PROC;
+
+--
+--### create_group_readwrite
+--
+--Create a group that can read and write data.
+--
+--```sql
+--CALL util..create_group_readwrite('GROUP_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE create_group_readwrite(VARCHAR(100))
   RETURNS BOOLEAN
@@ -329,13 +390,14 @@ BEGIN_PROC
   END;
 END_PROC;
 
--- # create_group_system_view
 --
--- Create a group that can query system views
+--### create_group_system_view
 --
--- ```sql
--- util..create_group_system_view('GROUP_NAME')
--- ```
+--Create a group that can read system views.
+--
+--```sql
+--CALL util..create_group_system_view('GROUP_NAME');
+--```
 --
 
 CREATE OR REPLACE PROCEDURE create_group_systemview(VARCHAR(100))
@@ -358,6 +420,16 @@ BEGIN_PROC
     RETURN TRUE;
   END;
 END_PROC;
+
+--
+--### create_group_execute
+--
+--Create a group that can edit and call stored procedures.
+--
+--```sql
+--CALL util..create_group_execute('GROUP_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE create_group_execute(VARCHAR(100))
   RETURNS BOOLEAN
@@ -411,7 +483,12 @@ END_PROC;
 --
 --## Generate docs
 --
---The following command work also from Git shell on Windows.
+--Documentation is generated extracting comments with a `--` in the beginning of line.
+--
+--```sql
+--/* This kind of comments will be ignored */
+--```
+--The following commands work also from Git shell on Windows.
 --
 --### Generate README.md
 --
@@ -421,13 +498,13 @@ END_PROC;
 --
 --### Generate html docs
 --
---Install *marked* globally (only once).
+--Install [marked](https://github.com/chjj/marked) globally **only once**.
 --
 --```bash
 --npm install marked -g
 --```
 --
---Create index.html from README.md
+--Create docs/index.html from README.md
 --
 --```bash
 --marked -o docs/index.html README.md
@@ -436,17 +513,7 @@ END_PROC;
 --Update site
 --
 --```bash
---git subtree --prefix docs pull origin gh-pages
+--git subtree --prefix docs push origin gh-pages
 --```
---
---Install docco
---
---    npm install docco -g
---
---Create annotated sources
---
---    mkdir docs
---    $ docco -o docs nz_util.sql
---    $ mv docs/nz_util.sql docs/index.html
 --
 
