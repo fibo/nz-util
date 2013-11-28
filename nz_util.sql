@@ -409,9 +409,35 @@ END_PROC;
 
 --# Development
 --
---Generate README.md
+--## Generate docs
 --
---    $ grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
+--The following command work also from Git shell on Windows.
+--
+--### Generate README.md
+--
+--```bash
+--grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
+--```
+--
+--### Generate html docs
+--
+--Install *marked* globally (only once).
+--
+--```bash
+--npm install marked -g
+--```
+--
+--Create index.html from README.md
+--
+--```bash
+--marked -o docs/index.html README.md
+--```
+--
+--Update site
+--
+--```bash
+--git subtree --prefix docs pull origin gh-pages
+--```
 --
 --Install docco
 --
@@ -423,3 +449,4 @@ END_PROC;
 --    $ docco -o docs nz_util.sql
 --    $ mv docs/nz_util.sql docs/index.html
 --
+

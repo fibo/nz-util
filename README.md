@@ -35,9 +35,35 @@ If you are on a Linux box (for example the Netezza frontend itself), you can try
 
 # Development
 
-Generate README.md
+## Generate docs
 
-    $ grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
+The following command work also from Git shell on Windows.
+
+### Generate README.md
+
+```bash
+grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
+```
+
+### Generate html docs
+
+Install *marked* globally (only once).
+
+```bash
+npm install marked -g
+```
+
+Create index.html from README.md
+
+```bash
+marked -o docs/index.html README.md
+```
+
+Update site
+
+```bash
+git subtree --prefix docs pull origin gh-pages
+```
 
 Install docco
 

@@ -1,0 +1,33 @@
+<h1 id="nz-util">nz-util</h1>
+<p>Netezza utility functions</p>
+<h1 id="installation">Installation</h1>
+<h2 id="download-the-code">Download the code</h2>
+<p>If you are on a Linux box (for example the Netezza frontend itself), you can try with this command</p>
+<pre><code>wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql</code></pre>
+<h2 id="install-utilities">Install utilities</h2>
+<p>   $ nzsql -u admin -d system -c &#39;CREATE DATABASE util COLLECT HISTORY OFF&#39;
+   $ nzsql -u admin -d util -f nz_util.sql</p>
+<h1 id="utilities">Utilities</h1>
+<h2 id="class_of-varchar-100-varchar-100-">class_of(VARCHAR(100), VARCHAR(100))</h2>
+<h2 id="create_group-varchar-100-">create_group(VARCHAR(100))</h2>
+<h1 id="create_group_system_view">create_group_system_view</h1>
+<p> Create a group that can query system views</p>
+<pre><code class="lang-sql"> util..create_group_system_view(&#39;GROUP_NAME&#39;)</code></pre>
+<h1 id="development">Development</h1>
+<h2 id="generate-docs">Generate docs</h2>
+<p>The following command work also from Git shell on Windows.</p>
+<h3 id="generate-readme-md">Generate README.md</h3>
+<pre><code class="lang-bash">grep -E &#39;^--&#39; nz_util.sql | sed -e &#39;s/--//&#39; &gt; README.md</code></pre>
+<h3 id="generate-html-docs">Generate html docs</h3>
+<p>Install <em>marked</em> globally (only once).</p>
+<pre><code class="lang-bash">npm install marked -g</code></pre>
+<p>Create index.html from README.md</p>
+<pre><code class="lang-bash">marked -o docs/index.html README.md</code></pre>
+<p>Update site</p>
+<pre><code class="lang-bash">git subtree --prefix docs pull origin gh-pages</code></pre>
+<p>Install docco</p>
+<pre><code>npm install docco -g</code></pre>
+<p>Create annotated sources</p>
+<pre><code>mkdir docs
+$ docco -o docs nz_util.sql
+$ mv docs/nz_util.sql docs/index.html</code></pre>
