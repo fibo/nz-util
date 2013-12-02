@@ -1,5 +1,8 @@
 <h1 id="nz-util">nz-util</h1>
+<blockquote>
 <p>Netezza utility functions</p>
+</blockquote>
+<p><strong>Version 2013-12-02</strong></p>
 <h1 id="installation">Installation</h1>
 <h2 id="download-the-code">Download the code</h2>
 <p>If you are on a Linux box (for example the Netezza frontend itself), you can try with this command</p>
@@ -17,9 +20,7 @@ nzsql -u admin -d util -f nz_util.sql</code></pre>
 <h2 id="class_of">class_of</h2>
 <p>Return the object class.</p>
 <pre><code class="lang-sql">CALL util..class_of(&#39;FOO&#39;);</code></pre>
-<ul>
-<li><em>object_name</em> is not case sensitive</li>
-</ul>
+<h2 id="-object_name-is-not-case-sensitive"><em> </em>object_name* is not case sensitive</h2>
 <h2 id="groups-and-grants-management">Groups and grants management</h2>
 <h3 id="create_or_update_group">create_or_update_group</h3>
 <p>Create a group safely. If group already exists, it will be granted to list current catalog.
@@ -37,6 +38,24 @@ CALL util..create_or_update_group(&#39;GROUP_NAME&#39;);</code></pre>
 CALL util..grant_readonly(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
 <li>creates group if it does not exists</li>
+<li>grants <em>list, select</em> object privileges on <em>table, view, sequence</em></li>
+</ul>
+<h3 id="grant_external">grant_external</h3>
+<p>Grant a group to create, read and write external tables in current catalog.</p>
+<pre><code class="lang-sql">\c mydatabase
+CALL util..grant_external(&#39;GROUP_NAME&#39;);</code></pre>
+<ul>
+<li>creates group if it does not exists</li>
+<li>grants <em>list, select, drop</em> object privileges on <em>external table</em></li>
+<li>grants <em>create external table</em> admin privilege<h3 id="grant_systemview">grant_systemview</h3>
+</li>
+</ul>
+<p>Grant a group to read system views in current catalog.</p>
+<pre><code class="lang-sql">\c mydatabase
+CALL util..grant_systemview(&#39;GROUP_NAME&#39;);</code></pre>
+<ul>
+<li>creates group if it does not exists</li>
+<li>grants <em>list, select</em> object privileges on <em>system view</em></li>
 </ul>
 <h3 id="grant_readwrite">grant_readwrite</h3>
 <p>Grant a group to read and write data in current catalog.</p>
@@ -44,20 +63,20 @@ CALL util..grant_readonly(&#39;GROUP_NAME&#39;);</code></pre>
 CALL util..grant_readwrite(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
 <li>creates group if it does not exists</li>
-</ul>
-<h3 id="grant_systemview">grant_systemview</h3>
-<p>Grant a group to read system views in current catalog.</p>
-<pre><code class="lang-sql">\c mydatabase
-CALL util..grant_systemview(&#39;GROUP_NAME&#39;);</code></pre>
-<ul>
-<li>creates group if it does not exists</li>
+<li>calls <a href="#grant_readonly">grant_readonly</a></li>
+<li>calls <a href="#grant_external">grant_external</a></li>
+<li>calls <a href="#grant_systemview">grant_systemview</a></li>
+<li>grants <em>insert, update, delete, truncate, alter, drop, genstats, groom</em> object privileges on <em>table</em></li>
+<li>grants <em>create table, create view, create sequence</em> admin privilege</li>
 </ul>
 <h3 id="grant_execute">grant_execute</h3>
-<p>Grant a group to edit and call stored procedures in current catalog.</p>
+<p>Grant a group to edit and call stored procedures and functions in current catalog.</p>
 <pre><code class="lang-sql">\c mydatabase
 CALL util..grant_execute(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
-<li>creates group if it does not exists<h1 id="development">Development</h1>
+<li>creates group if it does not exists</li>
+<li>grants <em>list, select, update, drop, execute</em> object privileges on <em>function, procedure</em></li>
+<li>grants <em>create function, create procedure</em> admin privilege<h1 id="development">Development</h1>
 </li>
 </ul>
 <h2 id="generate-docs">Generate docs</h2>

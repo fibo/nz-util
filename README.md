@@ -1,8 +1,9 @@
 nz-util
 =======
 
-Netezza utility functions
+> Netezza utility functions
 
+**Version 2013-12-02**
 # Installation
 
 ## Download the code
@@ -33,6 +34,7 @@ Update *Netezza utilities*.
 ```bash
 nzsql -u admin -d util -f nz_util.sql
 ```
+
 # Utilities
 
 
@@ -48,6 +50,7 @@ CALL util..class_of('FOO');
 ```
 
 * *object_name* is not case sensitive
+----------------
 
 ## Groups and grants management
 
@@ -76,6 +79,31 @@ CALL util..grant_readonly('GROUP_NAME');
 ```
 
 * creates group if it does not exists
+* grants *list, select* object privileges on *table, view, sequence*
+
+### grant_external
+
+Grant a group to create, read and write external tables in current catalog.
+
+```sql
+\c mydatabase
+CALL util..grant_external('GROUP_NAME');
+```
+
+* creates group if it does not exists
+* grants *list, select, drop* object privileges on *external table*
+* grants *create external table* admin privilege
+### grant_systemview
+
+Grant a group to read system views in current catalog.
+
+```sql
+\c mydatabase
+CALL util..grant_systemview('GROUP_NAME');
+```
+
+* creates group if it does not exists
+* grants *list, select* object privileges on *system view*
 
 ### grant_readwrite
 
@@ -87,21 +115,16 @@ CALL util..grant_readwrite('GROUP_NAME');
 ```
 
 * creates group if it does not exists
+* calls [grant_readonly](#grant_readonly)
+* calls [grant_external](#grant_external)
+* calls [grant_systemview](#grant_systemview)
+* grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
+* grants *create table, create view, create sequence* admin privilege
 
-### grant_systemview
-
-Grant a group to read system views in current catalog.
-
-```sql
-\c mydatabase
-CALL util..grant_systemview('GROUP_NAME');
-```
-
-* creates group if it does not exists
 
 ### grant_execute
 
-Grant a group to edit and call stored procedures in current catalog.
+Grant a group to edit and call stored procedures and functions in current catalog.
 
 ```sql
 \c mydatabase
@@ -109,6 +132,8 @@ CALL util..grant_execute('GROUP_NAME');
 ```
 
 * creates group if it does not exists
+* grants *list, select, update, drop, execute* object privileges on *function, procedure*
+* grants *create function, create procedure* admin privilege
 # Development
 
 ## Generate docs

@@ -1,8 +1,14 @@
 --nz-util
 --=======
 --
---Netezza utility functions
+--> Netezza utility functions
 --
+
+/* Update version number */
+COMMENT ON DATABASE util
+--**Version 2013-12-02**
+IS 'Version 2013-12-02, http://www.g14n.info/nz-util/, MIT License';
+
 --# Installation
 --
 --## Download the code
@@ -34,11 +40,9 @@
 --nzsql -u admin -d util -f nz_util.sql
 --```
 
+--
 --# Utilities
 --
-
-/* Update version */
-COMMENT ON DATABASE util IS 'Version 2013-11-28, http://www.g14n.info/nz-util/';
 
 --
 --## Type checking
@@ -113,6 +117,48 @@ BEGIN_PROC
     RETURN class_name;
   END;
 END_PROC;
+
+/* available classes
+
+select objname from _T_OBJECT
+where objid in (
+select distinct objclass from _T_OBJECT
+)
+
+VIRGILIO_DEV_SK(ADMIN)-> \g
+     OBJNAME
+------------------
+ GLOBAL
+ DATABASE
+ GROUP
+ USER
+ TABLE
+ VIEW
+ RELATION
+ BASE VIEW
+ LIBRARY
+ VERSIONED TABLE
+ BASE TABLE SET
+ TABLE VERSION
+ SEQUENCE
+ EXTERNAL TABLE
+ SYNONYM
+ PROCEDURE
+ AGGREGATE
+ FUNCTION
+ SYSTEM TABLE
+ SYSTEM VIEW
+ SYSTEM INDEX
+ SYSTEM SEQ
+ DATATYPE
+ VIRTUAL TABLE
+ MANAGEMENT TABLE
+ MANAGEMENT VIEW
+ MANAGEMENT INDEX
+ MANAGEMENT SEQ
+(28 rows)
+
+*/
 
 /* this procedures is private by now */
 
@@ -367,15 +413,72 @@ AS
 BEGIN_PROC
   DECLARE
     group_name ALIAS FOR $1;
-
-    object_privilege_list VARCHAR(1000) := ' LIST, SELECT ';
-
-    object_list           VARCHAR(1000) := ' TABLE, VIEW, SEQUENCE ';
   BEGIN
 --* creates group if it does not exists
     CALL util..create_or_update_group(group_name);
 
-    CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
+--* grants *list, select* object privileges on *table, view, sequence*
+    CALL util..grant_object_privilege(group_name, ' LIST, SELECT ', ' TABLE, VIEW, SEQUENCE ');
+
+    RETURN TRUE;
+  END;
+END_PROC;
+
+--
+--### grant_external
+--
+--Grant a group to create, read and write external tables in current catalog.
+--
+--```sql
+--\c mydatabase
+--CALL util..grant_external('GROUP_NAME');
+--```
+--
+
+CREATE OR REPLACE PROCEDURE grant_external(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    group_name ALIAS FOR $1;
+  BEGIN
+--* creates group if it does not exists
+    CALL util..create_or_update_group(group_name);
+
+--* grants *list, select, drop* object privileges on *external table*
+    CALL util..grant_object_privilege(group_name, ' LIST, SELECT, DROP ', ' EXTERNAL TABLE ');
+
+--* grants *create external table* admin privilege
+    CALL util..grant_admin_privilege(group_name, ' CREATE EXTERNAL TABLE ');
+
+    RETURN TRUE;
+  END;
+END_PROC;
+
+--### grant_systemview
+--
+--Grant a group to read system views in current catalog.
+--
+--```sql
+--\c mydatabase
+--CALL util..grant_systemview('GROUP_NAME');
+--```
+--
+
+CREATE OR REPLACE PROCEDURE grant_systemview(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    group_name ALIAS FOR $1;
+  BEGIN
+--* creates group if it does not exists
+    CALL util..create_or_update_group(group_name);
+
+--* grants *list, select* object privileges on *system view*
+    CALL util..grant_object_privilege(group_name, ' LIST, SELECT ', ' SYSTEM VIEW ');
 
     RETURN TRUE;
   END;
@@ -400,60 +503,42 @@ BEGIN_PROC
   DECLARE
     group_name ALIAS FOR $1;
 
+/* TODO questo per ora lo lascio
     object_privilege_list VARCHAR(1000) := ' LIST, SELECT, INSERT, UPDATE, DELETE, TRUNCATE, LOCK, ALTER, DROP, ABORT, LOAD, GENSTATS, GROOM ';
 
     object_list           VARCHAR(1000) := ' TABLE, VIEW, SEQUENCE ';
-
-    admin_privilege_list  VARCHAR(1000) := ' CREATE TABLE, CREATE SEQUENCE, CREATE VIEW, CREATE EXTERNAL TABLE ';
+*/
   BEGIN
 --* creates group if it does not exists
     CALL util..create_or_update_group(group_name);
 
+--* calls [grant_readonly](#grant_readonly)
+    CALL util..grant_readonly(group_name);
+
+--* calls [grant_external](#grant_external)
+    CALL util..grant_external(group_name);
+
+--* calls [grant_systemview](#grant_systemview)
+    CALL util..grant_systemview(group_name);
+
+--* grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
+    CALL util..grant_object_privilege(group_name, ' INSERT, UPDATE, DELETE, TRUNCATE, ALTER, DROP, GENSTATS, GROOM ', ' TABLE ');
+
+/* TODO questo per ora lo lascio
     CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
+*/
 
-    CALL util..grant_admin_privilege(group_name, admin_privilege_list);
-
+--* grants *create table, create view, create sequence* admin privilege
+    CALL util..grant_admin_privilege(group_name, ' CREATE TABLE, CREATE VIEW, CREATE SEQUENCE ');
     RETURN TRUE;
   END;
 END_PROC;
 
 --
---### grant_systemview
---
---Grant a group to read system views in current catalog.
---
---```sql
---\c mydatabase
---CALL util..grant_systemview('GROUP_NAME');
---```
---
-
-CREATE OR REPLACE PROCEDURE grant_systemview(VARCHAR(100))
-  RETURNS BOOLEAN
-  LANGUAGE NZPLSQL
-AS
-BEGIN_PROC
-  DECLARE
-    group_name ALIAS FOR $1;
-
-    object_privilege_list VARCHAR(1000) := ' LIST, SELECT ';
-
-    object_list           VARCHAR(1000) := ' SYSTEM VIEW ';
-
-  BEGIN
---* creates group if it does not exists
-    CALL util..create_or_update_group(group_name);
-
-    CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
-
-    RETURN TRUE;
-  END;
-END_PROC;
-
 --
 --### grant_execute
 --
---Grant a group to edit and call stored procedures in current catalog.
+--Grant a group to edit and call stored procedures and functions in current catalog.
 --
 --```sql
 --\c mydatabase
@@ -471,16 +556,16 @@ BEGIN_PROC
 
     object_privilege_list VARCHAR(1000) := ' LIST, SELECT, UPDATE, DROP, EXECUTE ';
 
-    object_list           VARCHAR(1000) := ' FUNCTION, PROCEDURE ';
-
     admin_privilege_list  VARCHAR(1000) := ' CREATE FUNCTION, CREATE PROCEDURE ';
   BEGIN
 --* creates group if it does not exists
     CALL util..create_or_update_group(group_name);
 
-    CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
+--* grants *list, select, update, drop, execute* object privileges on *function, procedure*
+    CALL util..grant_object_privilege(group_name, object_privilege_list, ' FUNCTION, PROCEDURE ');
 
-    CALL util..grant_admin_privilege(group_name, admin_privilege_list);
+--* grants *create function, create procedure* admin privilege
+    CALL util..grant_admin_privilege(group_name, ' CREATE FUNCTION, CREATE PROCEDURE ');
 
     RETURN TRUE;
   END;
@@ -547,3 +632,4 @@ END_PROC;
 --git subtree --prefix docs push origin gh-pages
 --```
 --
+
