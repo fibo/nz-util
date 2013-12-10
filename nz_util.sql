@@ -539,12 +539,6 @@ AS
 BEGIN_PROC
   DECLARE
     group_name ALIAS FOR $1;
-
-/* TODO questo per ora lo lascio
-    object_privilege_list VARCHAR(1000) := ' LIST, SELECT, INSERT, UPDATE, DELETE, TRUNCATE, LOCK, ALTER, DROP, ABORT, LOAD, GENSTATS, GROOM ';
-
-    object_list           VARCHAR(1000) := ' TABLE, VIEW, SEQUENCE ';
-*/
   BEGIN
 --* creates group if it does not exists
     CALL util..create_or_update_group(group_name);
@@ -558,9 +552,8 @@ BEGIN_PROC
 --* grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
     CALL util..grant_object_privilege(group_name, ' INSERT, UPDATE, DELETE, TRUNCATE, ALTER, DROP, GENSTATS, GROOM ', ' TABLE ');
 
-/* TODO questo per ora lo lascio
-    CALL util..grant_object_privilege(group_name, object_privilege_list, object_list);
-*/
+--* grants *list, select* object privileges on *sequence*
+    CALL util..grant_object_privilege(group_name, ' LIST, SELECT ', ' SEQUENCE ');
 
 --* grants *create table, create view, create sequence* admin privilege
     CALL util..grant_admin_privilege(group_name, ' CREATE TABLE, CREATE VIEW, CREATE SEQUENCE ');

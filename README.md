@@ -156,6 +156,7 @@ CALL util..grant_readwrite('GROUP_NAME');
 * calls [grant_readonly](#grant_readonly)
 * calls [grant_external](#grant_external)
 * grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
+* grants *list, select* object privileges on *sequence*
 * grants *create table, create view, create sequence* admin privilege
 
 ### grant_execute
