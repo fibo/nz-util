@@ -193,7 +193,15 @@ BEGIN_PROC
   END;
 END_PROC;
 
-/* this procedures is private by now */
+--
+--### is_table
+--
+--Returns true if given object is a *TABLE*, otherwise false.
+--
+--```sql
+--CALL util..is_table('OBJECT_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE is_table(VARCHAR(100))
   RETURNS BOOLEAN
@@ -215,7 +223,15 @@ BEGIN_PROC
   END;
 END_PROC;
 
-/* this procedures is private by now */
+--
+--### is_view
+--
+--Returns true if given object is a *VIEW*, otherwise false.
+--
+--```sql
+--CALL util..is_view('OBJECT_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE is_view(VARCHAR(100))
   RETURNS BOOLEAN
@@ -237,7 +253,15 @@ BEGIN_PROC
   END;
 END_PROC;
 
-/* this procedures is private by now */
+--
+--### is_sequence
+--
+--Returns true if given object is a *SEQUENCE*, otherwise false.
+--
+--```sql
+--CALL util..is_sequence('OBJECT_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE is_sequence(VARCHAR(100))
   RETURNS BOOLEAN
@@ -259,7 +283,15 @@ BEGIN_PROC
   END;
 END_PROC;
 
-/* this procedures is private by now */
+--
+--### is_group
+--
+--Returns true if given object is a *GROUP*, otherwise false.
+--
+--```sql
+--CALL util..is_group('OBJECT_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE is_group(VARCHAR(100))
   RETURNS BOOLEAN
@@ -281,7 +313,15 @@ BEGIN_PROC
   END;
 END_PROC;
 
-/* this procedures is private by now */
+--
+--### is_user
+--
+--Returns true if given object is a *USER*, otherwise false.
+--
+--```sql
+--CALL util..is_user('OBJECT_NAME');
+--```
+--
 
 CREATE OR REPLACE PROCEDURE is_user(VARCHAR(100))
   RETURNS BOOLEAN
@@ -380,12 +420,13 @@ BEGIN_PROC
       RAISE EXCEPTION '% is a reserved catalog', catalog;
     END IF;
 
---* checks if group already exists
     group_exists := util..is_group(group_name);
 
     IF group_exists THEN
+--* if group already exists it just grants *list* on catalog
       EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
     ELSE
+--* creates group if it does not exists and grants *list* on catalog
       EXECUTE IMMEDIATE 'CREATE GROUP ' || group_name;
       EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
     END IF;
@@ -456,6 +497,7 @@ BEGIN_PROC
   END;
 END_PROC;
 
+--
 --### grant_systemview
 --
 --Grant a group to read system views in current catalog.
@@ -535,7 +577,6 @@ BEGIN_PROC
 END_PROC;
 
 --
---
 --### grant_execute
 --
 --Grant a group to edit and call stored procedures and functions in current catalog.
@@ -595,6 +636,7 @@ END_PROC;
 
 */
 
+--
 --# Development
 --
 --## Generate docs

@@ -21,6 +21,21 @@ nzsql -u admin -d util -f nz_util.sql</code></pre>
 <p>Return the object class.</p>
 <pre><code class="lang-sql">CALL util..class_of(&#39;FOO&#39;);</code></pre>
 <h2 id="-object_name-is-not-case-sensitive"><em> </em>object_name* is not case sensitive</h2>
+<h3 id="is_table">is_table</h3>
+<p>Returns true if given object is a <em>TABLE</em>, otherwise false.</p>
+<pre><code class="lang-sql">CALL util..is_table(&#39;OBJECT_NAME&#39;);</code></pre>
+<h3 id="is_view">is_view</h3>
+<p>Returns true if given object is a <em>VIEW</em>, otherwise false.</p>
+<pre><code class="lang-sql">CALL util..is_view(&#39;OBJECT_NAME&#39;);</code></pre>
+<h3 id="is_sequence">is_sequence</h3>
+<p>Returns true if given object is a <em>SEQUENCE</em>, otherwise false.</p>
+<pre><code class="lang-sql">CALL util..is_sequence(&#39;OBJECT_NAME&#39;);</code></pre>
+<h3 id="is_group">is_group</h3>
+<p>Returns true if given object is a <em>GROUP</em>, otherwise false.</p>
+<pre><code class="lang-sql">CALL util..is_group(&#39;OBJECT_NAME&#39;);</code></pre>
+<h3 id="is_user">is_user</h3>
+<p>Returns true if given object is a <em>USER</em>, otherwise false.</p>
+<pre><code class="lang-sql">CALL util..is_user(&#39;OBJECT_NAME&#39;);</code></pre>
 <h2 id="groups-and-grants-management">Groups and grants management</h2>
 <h3 id="create_or_update_group">create_or_update_group</h3>
 <p>Create a group safely. If group already exists, it will be granted to list current catalog.
@@ -30,7 +45,8 @@ you need to connect manually to catalog.</p>
 CALL util..create_or_update_group(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
 <li>avoids creating groups in reserved catalogs</li>
-<li>checks if group already exists</li>
+<li>if group already exists it just grants <em>list</em> on catalog</li>
+<li>creates group if it does not exists and grants <em>list</em> on catalog</li>
 </ul>
 <h3 id="grant_readonly">grant_readonly</h3>
 <p>Grant a group to read data in current catalog.</p>
@@ -47,9 +63,9 @@ CALL util..grant_external(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
 <li>creates group if it does not exists</li>
 <li>grants <em>list, select, drop</em> object privileges on <em>external table</em></li>
-<li>grants <em>create external table</em> admin privilege<h3 id="grant_systemview">grant_systemview</h3>
-</li>
+<li>grants <em>create external table</em> admin privilege</li>
 </ul>
+<h3 id="grant_systemview">grant_systemview</h3>
 <p>Grant a group to read system views in current catalog.</p>
 <pre><code class="lang-sql">\c mydatabase
 CALL util..grant_systemview(&#39;GROUP_NAME&#39;);</code></pre>
@@ -76,9 +92,9 @@ CALL util..grant_execute(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
 <li>creates group if it does not exists</li>
 <li>grants <em>list, select, update, drop, execute</em> object privileges on <em>function, procedure</em></li>
-<li>grants <em>create function, create procedure</em> admin privilege<h1 id="development">Development</h1>
-</li>
+<li>grants <em>create function, create procedure</em> admin privilege</li>
 </ul>
+<h1 id="development">Development</h1>
 <h2 id="generate-docs">Generate docs</h2>
 <p>Documentation is generated extracting comments with a <code>--</code> in the beginning of line.</p>
 <pre><code class="lang-sql">/* This kind of comments will be ignored */</code></pre>
@@ -90,5 +106,5 @@ CALL util..grant_execute(&#39;GROUP_NAME&#39;);</code></pre>
 <pre><code class="lang-bash">npm install marked -g</code></pre>
 <p>Create docs/index.html from README.md</p>
 <pre><code class="lang-bash">marked -o docs/index.html README.md</code></pre>
-<p>Update site</p>
+<p>Do a <code>git commit</code> then update site</p>
 <pre><code class="lang-bash">git subtree --prefix docs push origin gh-pages</code></pre>

@@ -52,6 +52,51 @@ CALL util..class_of('FOO');
 * *object_name* is not case sensitive
 ----------------
 
+### is_table
+
+Returns true if given object is a *TABLE*, otherwise false.
+
+```sql
+CALL util..is_table('OBJECT_NAME');
+```
+
+
+### is_view
+
+Returns true if given object is a *VIEW*, otherwise false.
+
+```sql
+CALL util..is_view('OBJECT_NAME');
+```
+
+
+### is_sequence
+
+Returns true if given object is a *SEQUENCE*, otherwise false.
+
+```sql
+CALL util..is_sequence('OBJECT_NAME');
+```
+
+
+### is_group
+
+Returns true if given object is a *GROUP*, otherwise false.
+
+```sql
+CALL util..is_group('OBJECT_NAME');
+```
+
+
+### is_user
+
+Returns true if given object is a *USER*, otherwise false.
+
+```sql
+CALL util..is_user('OBJECT_NAME');
+```
+
+
 ## Groups and grants management
 
 
@@ -67,7 +112,8 @@ CALL util..create_or_update_group('GROUP_NAME');
 ```
 
 * avoids creating groups in reserved catalogs
-* checks if group already exists
+* if group already exists it just grants *list* on catalog
+* creates group if it does not exists and grants *list* on catalog
 
 ### grant_readonly
 
@@ -93,6 +139,7 @@ CALL util..grant_external('GROUP_NAME');
 * creates group if it does not exists
 * grants *list, select, drop* object privileges on *external table*
 * grants *create external table* admin privilege
+
 ### grant_systemview
 
 Grant a group to read system views in current catalog.
@@ -121,7 +168,6 @@ CALL util..grant_readwrite('GROUP_NAME');
 * grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
 * grants *create table, create view, create sequence* admin privilege
 
-
 ### grant_execute
 
 Grant a group to edit and call stored procedures and functions in current catalog.
@@ -134,6 +180,7 @@ CALL util..grant_execute('GROUP_NAME');
 * creates group if it does not exists
 * grants *list, select, update, drop, execute* object privileges on *function, procedure*
 * grants *create function, create procedure* admin privilege
+
 # Development
 
 ## Generate docs
@@ -165,7 +212,7 @@ Create docs/index.html from README.md
 marked -o docs/index.html README.md
 ```
 
-Update site
+Do a `git commit` then update site
 
 ```bash
 git subtree --prefix docs push origin gh-pages
