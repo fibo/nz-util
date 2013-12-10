@@ -49,7 +49,7 @@ IS 'Version 2013-12-10, http://www.g14n.info/nz-util/, MIT License';
 --
 
 
-/* this procedures is private by now */
+/* this procedure is private by now */
 
 CREATE OR REPLACE PROCEDURE is_object(VARCHAR(100))
   RETURNS BOOLEAN
@@ -76,45 +76,6 @@ BEGIN_PROC
     END IF;
 
     RETURN FALSE;
-  END;
-END_PROC;
-
---
---## class_of
---
---Return the object class.
---
---```sql
---CALL util..class_of('FOO');
---```
---
-
-CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100))
-  RETURNS VARCHAR(100)
-  LANGUAGE NZPLSQL
-AS
-BEGIN_PROC
-  DECLARE
-    object_name ALIAS FOR $1;
-
-    class_name VARCHAR(100);
-  BEGIN
-
-    SELECT objname INTO class_name
-    FROM _T_OBJECT
-    WHERE objid = (
-      SELECT objclass
-      FROM _T_OBJECT
---* *object_name* is not case sensitive
-      WHERE objname = UPPER(object_name)
-      AND objdb = (
-        SELECT objid
-        FROM _T_OBJECT
-        WHERE objname = CURRENT_CATALOG
-      )
-    );
-
-    RETURN class_name;
   END;
 END_PROC;
 
@@ -160,7 +121,38 @@ VIRGILIO_DEV_SK(ADMIN)-> \g
 
 */
 
-/* this procedures is private by now */
+/* this procedure is private by now */
+
+CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100))
+  RETURNS VARCHAR(100)
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    class_name VARCHAR(100);
+  BEGIN
+
+    SELECT objname INTO class_name
+    FROM _T_OBJECT
+    WHERE objid = (
+      SELECT objclass
+      FROM _T_OBJECT
+      /* object_name is not case sensitive */
+      WHERE objname = UPPER(object_name)
+      AND objdb = (
+        SELECT objid
+        FROM _T_OBJECT
+        WHERE objname = CURRENT_CATALOG
+      )
+    );
+
+    RETURN class_name;
+  END;
+END_PROC;
+
+/* this procedure is private by now */
 
 CREATE OR REPLACE PROCEDURE class_of(VARCHAR(100), VARCHAR(100))
   RETURNS VARCHAR(100)
@@ -458,6 +450,9 @@ BEGIN_PROC
 --* creates group if it does not exists
     CALL util..create_or_update_group(group_name);
 
+--* calls [grant_systemview](#grant_systemview)
+    CALL util..grant_systemview(group_name);
+
 --* grants *list, select* object privileges on *table, view, sequence*
     CALL util..grant_object_privilege(group_name, ' LIST, SELECT ', ' TABLE, VIEW, SEQUENCE ');
 
@@ -559,9 +554,6 @@ BEGIN_PROC
 
 --* calls [grant_external](#grant_external)
     CALL util..grant_external(group_name);
-
---* calls [grant_systemview](#grant_systemview)
-    CALL util..grant_systemview(group_name);
 
 --* grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
     CALL util..grant_object_privilege(group_name, ' INSERT, UPDATE, DELETE, TRUNCATE, ALTER, DROP, GENSTATS, GROOM ', ' TABLE ');

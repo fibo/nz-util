@@ -17,10 +17,7 @@ nzsql -u admin -d util -f nz_util.sql</code></pre>
 <pre><code class="lang-bash">nzsql -u admin -d util -f nz_util.sql</code></pre>
 <h1 id="utilities">Utilities</h1>
 <h2 id="type-checking">Type checking</h2>
-<h2 id="class_of">class_of</h2>
-<p>Return the object class.</p>
-<pre><code class="lang-sql">CALL util..class_of(&#39;FOO&#39;);</code></pre>
-<h2 id="-object_name-is-not-case-sensitive"><em> </em>object_name* is not case sensitive</h2>
+<hr>
 <h3 id="is_table">is_table</h3>
 <p>Returns true if given object is a <em>TABLE</em>, otherwise false.</p>
 <pre><code class="lang-sql">CALL util..is_table(&#39;OBJECT_NAME&#39;);</code></pre>
@@ -54,6 +51,7 @@ CALL util..create_or_update_group(&#39;GROUP_NAME&#39;);</code></pre>
 CALL util..grant_readonly(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
 <li>creates group if it does not exists</li>
+<li>calls <a href="#grant_systemview">grant_systemview</a></li>
 <li>grants <em>list, select</em> object privileges on <em>table, view, sequence</em></li>
 </ul>
 <h3 id="grant_external">grant_external</h3>
@@ -81,7 +79,6 @@ CALL util..grant_readwrite(&#39;GROUP_NAME&#39;);</code></pre>
 <li>creates group if it does not exists</li>
 <li>calls <a href="#grant_readonly">grant_readonly</a></li>
 <li>calls <a href="#grant_external">grant_external</a></li>
-<li>calls <a href="#grant_systemview">grant_systemview</a></li>
 <li>grants <em>insert, update, delete, truncate, alter, drop, genstats, groom</em> object privileges on <em>table</em></li>
 <li>grants <em>create table, create view, create sequence</em> admin privilege</li>
 </ul>
