@@ -6,8 +6,8 @@
 
 /* Update version number */
 COMMENT ON DATABASE util
---**Version 2013-12-02**
-IS 'Version 2013-12-02, http://www.g14n.info/nz-util/, MIT License';
+--**Version 2013-12-10**
+IS 'Version 2013-12-10, http://www.g14n.info/nz-util/, MIT License';
 
 --# Installation
 --
@@ -626,7 +626,7 @@ END_PROC;
 --marked -o docs/index.html README.md
 --```
 --
---Update site
+--Do a `git commit` then update site
 --
 --```bash
 --git subtree --prefix docs push origin gh-pages

@@ -3,7 +3,7 @@ nz-util
 
 > Netezza utility functions
 
-**Version 2013-12-02**
+**Version 2013-12-10**
 # Installation
 
 ## Download the code
