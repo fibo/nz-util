@@ -1,9 +1,9 @@
 nz-util
 =======
 
-> Netezza utility functions
+> Netezza utility procedures
 
-**Version 2013-12-10**
+**Version 2013-12-12**
 # Installation
 
 ## Download the code
@@ -14,11 +14,19 @@ If you are on a Linux box (for example the Netezza frontend itself), you can try
 wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
 ```
 
+If it does not work, just point your browser to
+
+```
+https://raw.github.com/fibo/nz-util/master/nz_util.sql
+```
+
+and use copy and paste, dude!
+
 ## Install
 
 ```bash
 nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
-nzsql -u admin -d util -f nz_util.sql
+nzsql -u admin -d util -f nz_util.sql 1> /dev/null
 ```
 
 ## Update
@@ -29,11 +37,12 @@ Check current version
 nzsql -u admin -d util -c '\dd util'
 ```
 
-Update *Netezza utilities*.
+Update *Netezza utilities*
 
 ```bash
-nzsql -u admin -d util -f nz_util.sql
+nzsql -u admin -d util -f nz_util.sql 1> /dev/null
 ```
+
 
 # Utilities
 
@@ -86,6 +95,25 @@ Returns true if given object is a *USER*, otherwise false.
 CALL util..is_user('OBJECT_NAME');
 ```
 
+
+## Misc utilities
+
+
+### drop_table
+
+Drop a *table* safely. If *table* does not exists, it will manage it to avoid
+displaying an error message, so your logs will be cleaner.
+
+Note that if some object (for example a procedure) depends on the given *table*
+an error will occur.
+
+```sql
+\c mydatabase
+CALL util..drop_table('TABLE_NAME');
+```
+
+* avoids dropping tables in reserved catalogs
+* *table* is dropped only if it exists
 
 ## Groups and grants management
 
@@ -171,6 +199,18 @@ CALL util..grant_execute('GROUP_NAME');
 * creates group if it does not exists
 * grants *list, select, update, drop, execute* object privileges on *function, procedure*
 * grants *create function, create procedure* admin privilege
+
+### objects_owned_by
+
+When you want to delete a user you need to know which objects he owns.
+See [How to drop a user on Netezza](http://blog.g14n.info/2013/12/how-to-drop-user-on-netezza.html)
+
+```sql
+CALL util..objects_owned_by('USER_NAME');
+```
+
+* *user_name* is not case sensitive
+* raise a notice if *user* does not exists
 
 # Development
 

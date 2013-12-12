@@ -1,20 +1,23 @@
 <h1 id="nz-util">nz-util</h1>
 <blockquote>
-<p>Netezza utility functions</p>
+<p>Netezza utility procedures</p>
 </blockquote>
-<p><strong>Version 2013-12-10</strong></p>
+<p><strong>Version 2013-12-12</strong></p>
 <h1 id="installation">Installation</h1>
 <h2 id="download-the-code">Download the code</h2>
 <p>If you are on a Linux box (for example the Netezza frontend itself), you can try with this command</p>
 <pre><code class="lang-bash">wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql</code></pre>
+<p>If it does not work, just point your browser to</p>
+<pre><code>https://raw.github.com/fibo/nz-util/master/nz_util.sql</code></pre>
+<p>and use copy and paste, dude!</p>
 <h2 id="install">Install</h2>
 <pre><code class="lang-bash">nzsql -u admin -d system -c &#39;CREATE DATABASE util COLLECT HISTORY OFF&#39;
-nzsql -u admin -d util -f nz_util.sql</code></pre>
+nzsql -u admin -d util -f nz_util.sql 1&gt; /dev/null</code></pre>
 <h2 id="update">Update</h2>
 <p>Check current version</p>
 <pre><code class="lang-bash">nzsql -u admin -d util -c &#39;\dd util&#39;</code></pre>
-<p>Update <em>Netezza utilities</em>.</p>
-<pre><code class="lang-bash">nzsql -u admin -d util -f nz_util.sql</code></pre>
+<p>Update <em>Netezza utilities</em></p>
+<pre><code class="lang-bash">nzsql -u admin -d util -f nz_util.sql 1&gt; /dev/null</code></pre>
 <h1 id="utilities">Utilities</h1>
 <h2 id="type-checking">Type checking</h2>
 <hr>
@@ -33,6 +36,18 @@ nzsql -u admin -d util -f nz_util.sql</code></pre>
 <h3 id="is_user">is_user</h3>
 <p>Returns true if given object is a <em>USER</em>, otherwise false.</p>
 <pre><code class="lang-sql">CALL util..is_user(&#39;OBJECT_NAME&#39;);</code></pre>
+<h2 id="misc-utilities">Misc utilities</h2>
+<h3 id="drop_table">drop_table</h3>
+<p>Drop a <em>table</em> safely. If <em>table</em> does not exists, it will manage it to avoid
+displaying an error message, so your logs will be cleaner.</p>
+<p>Note that if some object (for example a procedure) depends on the given <em>table</em>
+an error will occur.</p>
+<pre><code class="lang-sql">\c mydatabase
+CALL util..drop_table(&#39;TABLE_NAME&#39;);</code></pre>
+<ul>
+<li>avoids dropping tables in reserved catalogs</li>
+<li><em>table</em> is dropped only if it exists</li>
+</ul>
 <h2 id="groups-and-grants-management">Groups and grants management</h2>
 <h3 id="create_or_update_group">create_or_update_group</h3>
 <p>Create a group safely. If group already exists, it will be granted to list current catalog.
@@ -91,6 +106,14 @@ CALL util..grant_execute(&#39;GROUP_NAME&#39;);</code></pre>
 <li>creates group if it does not exists</li>
 <li>grants <em>list, select, update, drop, execute</em> object privileges on <em>function, procedure</em></li>
 <li>grants <em>create function, create procedure</em> admin privilege</li>
+</ul>
+<h3 id="objects_owned_by">objects_owned_by</h3>
+<p>When you want to delete a user you need to know which objects he owns.
+See <a href="http://blog.g14n.info/2013/12/how-to-drop-user-on-netezza.html">How to drop a user on Netezza</a></p>
+<pre><code class="lang-sql">CALL util..objects_owned_by(&#39;USER_NAME&#39;);</code></pre>
+<ul>
+<li><em>user_name</em> is not case sensitive</li>
+<li>raise a notice if <em>user</em> does not exists</li>
 </ul>
 <h1 id="development">Development</h1>
 <h2 id="generate-docs">Generate docs</h2>

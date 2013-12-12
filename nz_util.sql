@@ -1,13 +1,13 @@
 --nz-util
 --=======
 --
---> Netezza utility functions
+--> Netezza utility procedures
 --
 
 /* Update version number */
 COMMENT ON DATABASE util
---**Version 2013-12-10**
-IS 'Version 2013-12-10, http://www.g14n.info/nz-util/, MIT License';
+--**Version 2013-12-12**
+IS 'Version 2013-12-12, http://www.g14n.info/nz-util/, MIT License';
 
 --# Installation
 --
@@ -19,11 +19,19 @@ IS 'Version 2013-12-10, http://www.g14n.info/nz-util/, MIT License';
 --wget --no-check-certificate --timestamping https://raw.github.com/fibo/nz-util/master/nz_util.sql
 --```
 --
+--If it does not work, just point your browser to
+--
+--```
+--https://raw.github.com/fibo/nz-util/master/nz_util.sql
+--```
+--
+--and use copy and paste, dude!
+--
 --## Install
 --
 --```bash
 --nzsql -u admin -d system -c 'CREATE DATABASE util COLLECT HISTORY OFF'
---nzsql -u admin -d util -f nz_util.sql
+--nzsql -u admin -d util -f nz_util.sql 1> /dev/null
 --```
 --
 --## Update
@@ -34,11 +42,12 @@ IS 'Version 2013-12-10, http://www.g14n.info/nz-util/, MIT License';
 --nzsql -u admin -d util -c '\dd util'
 --```
 --
---Update *Netezza utilities*.
+--Update *Netezza utilities*
 --
 --```bash
---nzsql -u admin -d util -f nz_util.sql
+--nzsql -u admin -d util -f nz_util.sql 1> /dev/null
 --```
+--
 
 --
 --# Utilities
@@ -382,6 +391,37 @@ BEGIN_PROC
   END;
 END_PROC;
 
+/* empty_procedure is private
+
+by now it is used to create procedures that returns a reftable without rising an error
+
+for example
+CALL util..empty_procedure('objects_owned_by(VARCHAR(100))');
+ */
+
+CREATE OR REPLACE PROCEDURE empty_procedure(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    procedure_name ALIAS FOR $1;
+  BEGIN
+    EXECUTE IMMEDIATE 'CREATE OR REPLACE PROCEDURE ' || procedure_name
+    || ' RETURNS BOOLEAN '
+    || ' LANGUAGE NZPLSQL '
+    || ' AS '
+    || ' BEGIN_PROC '
+    || '   BEGIN '
+    || '     RETURN TRUE;'
+    || '   END;'
+    || ' END_PROC;'
+    ;
+
+    RETURN TRUE;
+  END;
+END_PROC;
+
 --
 --## Groups and grants management
 --
@@ -648,19 +688,19 @@ END_PROC;
 --### objects_owned_by
 --
 --When you want to delete a user you need to know which objects he owns.
-/* TODO aggiungi articolo a How to drop a user on Netezza
-*/
+--See [How to drop a user on Netezza](http://blog.g14n.info/2013/12/how-to-drop-user-on-netezza.html)
 --
 --```sql
 --CALL util..objects_owned_by('USER_NAME');
 --```
 --
 
--- TODO CALL util..drop_table('tmp_objects_owned_by') ; -- ma dovrei fare anche drop_procedure e poi fare CREATE PROCEDURE senza il REPLACE ???
+CALL util..empty_procedure('objects_owned_by(VARCHAR(100))');
+CALL util..drop_table('tmp_objects_owned_by');
+
 CREATE TABLE tmp_objects_owned_by (
---  dbname INT8,
---  objname INT8
   dbname VARCHAR(100),
+  objtype VARCHAR(100),
   objname VARCHAR(100)
 )
 DISTRIBUTE ON RANDOM
@@ -673,56 +713,29 @@ AS
 BEGIN_PROC
   DECLARE
     user_name ALIAS FOR $1;
+
+    user_exists BOOLEAN;
   BEGIN
 
     user_exists := util..is_user(user_name);
 
-/*
-
     IF user_exists THEN
---* if user exists it just grants *list* on catalog
-      EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
+      EXECUTE IMMEDIATE 'INSERT INTO ' || REFTABLENAME
+      || ' SELECT database, objtype, objname '
+      || ' FROM _V_OBJ_RELATION_XDB '
+--* *user_name* is not case sensitive
+      || ' WHERE owner = ^' || user_name || '^'
+      ;
     ELSE
---* creates group if it does not exists and grants *list* on catalog
-      EXECUTE IMMEDIATE 'CREATE GROUP ' || group_name;
-      EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
+--* raise a notice if *user* does not exists
+      RAISE NOTICE '% user does not exists', user_name;
     END IF;
 
-select OBJNAME,OWNER,database
-from _V_OBJ_RELATION
-where owner = 'PIPPO'
-*/
-
-    EXECUTE IMMEDIATE 'INSERT INTO ' || REFTABLENAME || ' VALUES (1,2)';
 
 
     RETURN REFTABLE;
   END;
 END_PROC;
-
-/*
-
-DROP PROCEDURE users_of_group(VARCHAR(100));
-
-DROP TABLE tmp_users_of_group;
-
-CREATE TABLE tmp_users_of_group (
-  username VARCHAR(100)
-);
-
-CREATE PROCEDURE users_of_group(VARCHAR(100))
-  RETURNS REFTABLE(tmp_users_of_group)
-  LANGUAGE NZPLSQL
-AS
-BEGIN_PROC
-  DECLARE
-    group_name ALIAS FOR $1;
-  BEGIN
-    RETURN REFTABLE;
-  END;
-END_PROC;
-
-*/
 
 --
 --# Development
