@@ -336,6 +336,53 @@ BEGIN_PROC
 END_PROC;
 
 --
+--## Misc utilities
+--
+
+--
+--### drop_table
+--
+--Drop a *table* safely. If *table* does not exists, it will manage it to avoid
+--displaying an error message, so your logs will be cleaner.
+--
+--Note that if some object (for example a procedure) depends on the given *table*
+--an error will occur.
+--
+--```sql
+--\c mydatabase
+--CALL util..drop_table('TABLE_NAME');
+--```
+--
+
+CREATE OR REPLACE PROCEDURE drop_table(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    catalog NAME := CURRENT_CATALOG;
+
+    table_name ALIAS FOR $1;
+
+    table_exists BOOLEAN;
+  BEGIN
+--* avoids dropping tables in reserved catalogs
+    IF 'SYSTEM' = catalog THEN
+      RAISE EXCEPTION '% is a reserved catalog', catalog;
+    END IF;
+
+    table_exists := util..is_table(table_name);
+
+    IF table_exists THEN
+--* *table* is dropped only if it exists
+      EXECUTE IMMEDIATE 'DROP TABLE ' || table_name;
+    END IF;
+
+    RETURN TRUE;
+  END;
+END_PROC;
+
+--
 --## Groups and grants management
 --
 
@@ -594,6 +641,62 @@ BEGIN_PROC
     CALL util..grant_admin_privilege(group_name, ' CREATE FUNCTION, CREATE PROCEDURE ');
 
     RETURN TRUE;
+  END;
+END_PROC;
+
+--
+--### objects_owned_by
+--
+--When you want to delete a user you need to know which objects he owns.
+/* TODO aggiungi articolo a How to drop a user on Netezza
+*/
+--
+--```sql
+--CALL util..objects_owned_by('USER_NAME');
+--```
+--
+
+-- TODO CALL util..drop_table('tmp_objects_owned_by') ; -- ma dovrei fare anche drop_procedure e poi fare CREATE PROCEDURE senza il REPLACE ???
+CREATE TABLE tmp_objects_owned_by (
+--  dbname INT8,
+--  objname INT8
+  dbname VARCHAR(100),
+  objname VARCHAR(100)
+)
+DISTRIBUTE ON RANDOM
+;
+
+CREATE OR REPLACE PROCEDURE objects_owned_by(VARCHAR(100))
+  RETURNS REFTABLE(tmp_objects_owned_by)
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    user_name ALIAS FOR $1;
+  BEGIN
+
+    user_exists := util..is_user(user_name);
+
+/*
+
+    IF user_exists THEN
+--* if user exists it just grants *list* on catalog
+      EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
+    ELSE
+--* creates group if it does not exists and grants *list* on catalog
+      EXECUTE IMMEDIATE 'CREATE GROUP ' || group_name;
+      EXECUTE IMMEDIATE 'GRANT LIST ON ' || catalog || ' TO ' || group_name;
+    END IF;
+
+select OBJNAME,OWNER,database
+from _V_OBJ_RELATION
+where owner = 'PIPPO'
+*/
+
+    EXECUTE IMMEDIATE 'INSERT INTO ' || REFTABLENAME || ' VALUES (1,2)';
+
+
+    RETURN REFTABLE;
   END;
 END_PROC;
 
