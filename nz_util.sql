@@ -6,8 +6,8 @@
 
 /* Update version number */
 COMMENT ON DATABASE util
---**Version 2013-12-12**
-IS 'Version 2013-12-12, http://www.g14n.info/nz-util/, MIT License';
+--**Version 2013-12-18**
+IS 'Version 2013-12-18, http://www.g14n.info/nz-util/, MIT License';
 
 --# Installation
 --
@@ -718,7 +718,7 @@ BEGIN_PROC
   END;
 END_PROC;
 
---
+
 --### transfer_objects_owned_by
 --
 --Transfer object ownership from given *USER_NAME* to *NEW_OWNER*.
@@ -741,7 +741,11 @@ BEGIN_PROC
     user_name ALIAS FOR $1;
 
     new_owner ALIAS FOR $2;
+
+    row RECORD;
   BEGIN
+
+/* TODO if uppercase user_name = uppercase new_owner raise exception */
 
 --* raise an exception if *user* does not exists
     CALL util..is_user_or_raise_exception(user_name);
@@ -749,12 +753,20 @@ BEGIN_PROC
     CALL util..is_user_or_raise_exception(new_owner);
 
 
-    FOR object_name IN SELECT objname from _V_OBJ_RELATION where owner = ^mrizzuti^; LOOP
-/* TODO continua da qui */
+    FOR row IN SELECT * FROM _V_OBJ_RELATION LOOP
+/* TODO it works, but user must be uppercase */
+      IF row.owner = user_name THEN
+
+        EXECUTE IMMEDIATE 'ALTER ' || row.objtype
+        || ' ' || row.objname || ' OWNER TO ' || new_owner;
+
+      END IF;
+    END LOOP;
 
     RETURN TRUE;
   END;
 END_PROC;
+
 
 --
 --### objects_owned_by
