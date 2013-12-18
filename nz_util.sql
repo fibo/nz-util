@@ -345,6 +345,39 @@ BEGIN_PROC
 END_PROC;
 
 --
+--### is_user_or_raise_exception
+--
+--Check if given object is a *USER* and return true, otherwise raise an exception.
+--
+--```sql
+--CALL util..is_user_or_raise_exception('OBJECT_NAME');
+--```
+--
+
+CREATE OR REPLACE PROCEDURE is_user_or_raise_exception(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    object_name ALIAS FOR $1;
+
+    user_exists BOOLEAN;
+  BEGIN
+
+    user_exists := util..is_user(object_name);
+
+    IF user_exists THEN
+      RETURN TRUE;
+    ELSE
+      RAISE EXCEPTION '% user does not exists', object_name;
+    END IF;
+
+    /* never reach here */
+    RETURN FALSE;
+  END;
+END_PROC;
+--
 --## Misc utilities
 --
 
@@ -473,6 +506,7 @@ END_PROC;
 --### create_or_update_group
 --
 --Create a group safely. If group already exists, it will be granted to list current catalog.
+--
 --Please note that since Netezza grants permissions contextually to current catalog,
 --you need to connect manually to catalog.
 --
@@ -685,6 +719,44 @@ BEGIN_PROC
 END_PROC;
 
 --
+--### transfer_objects_owned_by
+--
+--Transfer object ownership from given *USER_NAME* to *NEW_OWNER*.
+--
+--Please note that since Netezza grants permissions contextually to current catalog,
+--you need to connect manually to catalog.
+--
+--```sql
+--\c mydatabase
+--CALL util..transfer_objects_owned_by('USER_NAME', 'NEW_OWNER');
+--```
+--
+
+CREATE OR REPLACE PROCEDURE transfer_objects_owned_by(VARCHAR(100), VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    user_name ALIAS FOR $1;
+
+    new_owner ALIAS FOR $2;
+  BEGIN
+
+--* raise an exception if *user* does not exists
+    CALL util..is_user_or_raise_exception(user_name);
+--* raise an exception if *new_owner* does not exists
+    CALL util..is_user_or_raise_exception(new_owner);
+
+
+    FOR object_name IN SELECT objname from _V_OBJ_RELATION where owner = ^mrizzuti^; LOOP
+/* TODO continua da qui */
+
+    RETURN TRUE;
+  END;
+END_PROC;
+
+--
 --### objects_owned_by
 --
 --When you want to delete a user you need to know which objects he owns.
@@ -717,21 +789,15 @@ BEGIN_PROC
     user_exists BOOLEAN;
   BEGIN
 
-    user_exists := util..is_user(user_name);
+--* raise an exception if *user* does not exists
+    user_exists := util..is_user_or_raise_exception(user_name);
 
-    IF user_exists THEN
-      EXECUTE IMMEDIATE 'INSERT INTO ' || REFTABLENAME
-      || ' SELECT database, objtype, objname '
-      || ' FROM _V_OBJ_RELATION_XDB '
+    EXECUTE IMMEDIATE 'INSERT INTO ' || REFTABLENAME
+    || ' SELECT database, objtype, objname '
+    || ' FROM _V_OBJ_RELATION_XDB '
 --* *user_name* is not case sensitive
-      || ' WHERE owner = ^' || user_name || '^'
-      ;
-    ELSE
---* raise a notice if *user* does not exists
-      RAISE NOTICE '% user does not exists', user_name;
-    END IF;
-
-
+    || ' WHERE owner = ^' || user_name || '^'
+    ;
 
     RETURN REFTABLE;
   END;
