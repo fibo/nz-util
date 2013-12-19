@@ -2,7 +2,7 @@
 <blockquote>
 <p>Netezza utility procedures</p>
 </blockquote>
-<p><strong>Version 2013-12-12</strong></p>
+<p><strong>Version 2013-12-18</strong></p>
 <h1 id="installation">Installation</h1>
 <h2 id="download-the-code">Download the code</h2>
 <p>If you are on a Linux box (for example the Netezza frontend itself), you can try with this command</p>
@@ -36,6 +36,9 @@ nzsql -u admin -d util -f nz_util.sql 1&gt; /dev/null</code></pre>
 <h3 id="is_user">is_user</h3>
 <p>Returns true if given object is a <em>USER</em>, otherwise false.</p>
 <pre><code class="lang-sql">CALL util..is_user(&#39;OBJECT_NAME&#39;);</code></pre>
+<h3 id="is_user_or_raise_exception">is_user_or_raise_exception</h3>
+<p>Check if given object is a <em>USER</em> and return true, otherwise raise an exception.</p>
+<pre><code class="lang-sql">CALL util..is_user_or_raise_exception(&#39;OBJECT_NAME&#39;);</code></pre>
 <h2 id="misc-utilities">Misc utilities</h2>
 <h3 id="drop_table">drop_table</h3>
 <p>Drop a <em>table</em> safely. If <em>table</em> does not exists, it will manage it to avoid
@@ -50,8 +53,8 @@ CALL util..drop_table(&#39;TABLE_NAME&#39;);</code></pre>
 </ul>
 <h2 id="groups-and-grants-management">Groups and grants management</h2>
 <h3 id="create_or_update_group">create_or_update_group</h3>
-<p>Create a group safely. If group already exists, it will be granted to list current catalog.
-Please note that since Netezza grants permissions contextually to current catalog,
+<p>Create a group safely. If group already exists, it will be granted to list current catalog.</p>
+<p>Please note that since Netezza grants permissions contextually to current catalog,
 you need to connect manually to catalog.</p>
 <pre><code class="lang-sql">\c mydatabase
 CALL util..create_or_update_group(&#39;GROUP_NAME&#39;);</code></pre>
@@ -105,15 +108,26 @@ CALL util..grant_execute(&#39;GROUP_NAME&#39;);</code></pre>
 <ul>
 <li>creates group if it does not exists</li>
 <li>grants <em>list, select, update, drop, execute</em> object privileges on <em>function, procedure</em></li>
-<li>grants <em>create function, create procedure</em> admin privilege</li>
+<li>grants <em>create function, create procedure</em> admin privilege<h3 id="transfer_objects_owned_by">transfer_objects_owned_by</h3>
+</li>
+</ul>
+<p>Transfer object ownership from given <em>USER_NAME</em> to <em>NEW_OWNER</em>.</p>
+<p>Please note that since Netezza grants permissions contextually to current catalog,
+you need to connect manually to catalog.</p>
+<pre><code class="lang-sql">\c mydatabase
+CALL util..transfer_objects_owned_by(&#39;USER_NAME&#39;, &#39;NEW_OWNER&#39;);</code></pre>
+<ul>
+<li>raise an exception if <em>user</em> does not exists</li>
+<li>raise an exception if <em>new_owner</em> does not exists</li>
+<li><em>user_name</em> can be mixed case</li>
 </ul>
 <h3 id="objects_owned_by">objects_owned_by</h3>
 <p>When you want to delete a user you need to know which objects he owns.
 See <a href="http://blog.g14n.info/2013/12/how-to-drop-user-on-netezza.html">How to drop a user on Netezza</a></p>
 <pre><code class="lang-sql">CALL util..objects_owned_by(&#39;USER_NAME&#39;);</code></pre>
 <ul>
+<li>raise an exception if <em>user</em> does not exists</li>
 <li><em>user_name</em> is not case sensitive</li>
-<li>raise a notice if <em>user</em> does not exists</li>
 </ul>
 <h1 id="development">Development</h1>
 <h2 id="generate-docs">Generate docs</h2>

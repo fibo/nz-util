@@ -3,7 +3,7 @@ nz-util
 
 > Netezza utility procedures
 
-**Version 2013-12-12**
+**Version 2013-12-18**
 # Installation
 
 ## Download the code
@@ -96,6 +96,15 @@ CALL util..is_user('OBJECT_NAME');
 ```
 
 
+### is_user_or_raise_exception
+
+Check if given object is a *USER* and return true, otherwise raise an exception.
+
+```sql
+CALL util..is_user_or_raise_exception('OBJECT_NAME');
+```
+
+
 ## Misc utilities
 
 
@@ -121,6 +130,7 @@ CALL util..drop_table('TABLE_NAME');
 ### create_or_update_group
 
 Create a group safely. If group already exists, it will be granted to list current catalog.
+
 Please note that since Netezza grants permissions contextually to current catalog,
 you need to connect manually to catalog.
 
@@ -199,6 +209,21 @@ CALL util..grant_execute('GROUP_NAME');
 * creates group if it does not exists
 * grants *list, select, update, drop, execute* object privileges on *function, procedure*
 * grants *create function, create procedure* admin privilege
+### transfer_objects_owned_by
+
+Transfer object ownership from given *USER_NAME* to *NEW_OWNER*.
+
+Please note that since Netezza grants permissions contextually to current catalog,
+you need to connect manually to catalog.
+
+```sql
+\c mydatabase
+CALL util..transfer_objects_owned_by('USER_NAME', 'NEW_OWNER');
+```
+
+* raise an exception if *user* does not exists
+* raise an exception if *new_owner* does not exists
+* *user_name* can be mixed case
 
 ### objects_owned_by
 
@@ -209,8 +234,8 @@ See [How to drop a user on Netezza](http://blog.g14n.info/2013/12/how-to-drop-us
 CALL util..objects_owned_by('USER_NAME');
 ```
 
+* raise an exception if *user* does not exists
 * *user_name* is not case sensitive
-* raise a notice if *user* does not exists
 
 # Development
 

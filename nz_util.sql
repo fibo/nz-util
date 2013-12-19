@@ -754,8 +754,8 @@ BEGIN_PROC
 
 
     FOR row IN SELECT * FROM _V_OBJ_RELATION LOOP
-/* TODO it works, but user must be uppercase */
-      IF row.owner = user_name THEN
+--* *user_name* can be mixed case
+      IF row.owner = UPPER(user_name) THEN
 
         EXECUTE IMMEDIATE 'ALTER ' || row.objtype
         || ' ' || row.objname || ' OWNER TO ' || new_owner;
