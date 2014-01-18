@@ -3,7 +3,12 @@ nz-util
 
 > Netezza utility procedures
 
+
 **Version 2013-12-18**
+
+ See [online documentation](http://documentup.com/fibo/nz-util) for latest version.
+
+
 # Installation
 
 ## Download the code
@@ -246,31 +251,12 @@ Documentation is generated extracting comments with a `--` in the beginning of l
 ```sql
 /* This kind of comments will be ignored */
 ```
-The following commands work also from Git shell on Windows.
 
-### Generate README.md
+The following command works also from Git shell on Windows.
+
+Generate README.md
 
 ```bash
 grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
-```
-
-### Generate html docs
-
-Install [marked](https://github.com/chjj/marked) globally **only once**.
-
-```bash
-npm install marked -g
-```
-
-Create docs/index.html from README.md
-
-```bash
-marked -o docs/index.html README.md
-```
-
-Do a `git commit` then update site
-
-```bash
-git subtree --prefix docs push origin gh-pages
 ```
 
