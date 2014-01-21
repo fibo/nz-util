@@ -870,3 +870,8 @@ END_PROC;
 --grep -E '^--' nz_util.sql | sed -e 's/--//' > README.md
 --```
 --
+--
+--
+--[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/fibo/nz-util/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+--
+--
