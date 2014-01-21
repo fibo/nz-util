@@ -4,9 +4,9 @@ nz-util
 > Netezza utility procedures
 
 
-**Version 2013-12-18**
+**Version 2014-01-21**
 
- See [online documentation](http://documentup.com/fibo/nz-util) for latest version.
+    See [online docs](http://documentup.com/fibo/nz-util) for latest version.
 
 
 # Installation
@@ -158,7 +158,8 @@ CALL util..grant_readonly('GROUP_NAME');
 ```
 
 * creates group if it does not exists
-* calls [grant_systemview](#grant_systemview)
+* calls [grant_systemtable](#groups-and-grants-management/grant_systemtable)
+* calls [grant_systemview](#groups-and-grants-management/grant_systemview)
 * grants *list, select* object privileges on *table, view, sequence*
 
 ### grant_external
@@ -186,6 +187,18 @@ CALL util..grant_systemview('GROUP_NAME');
 * creates group if it does not exists
 * grants *list, select* object privileges on *system view*
 
+### grant_systemtable
+
+Grant a group to read system tables in current catalog.
+
+```sql
+\c mydatabase
+CALL util..grant_systemtable('GROUP_NAME');
+```
+
+* creates group if it does not exists
+* grants *list, select* object privileges on *system table*
+
 ### grant_readwrite
 
 Grant a group to read and write data in current catalog.
@@ -196,8 +209,8 @@ CALL util..grant_readwrite('GROUP_NAME');
 ```
 
 * creates group if it does not exists
-* calls [grant_readonly](#grant_readonly)
-* calls [grant_external](#grant_external)
+* calls [grant_readonly](#groups-and-grants-management/grant_readonly)
+* calls [grant_external](#groups-and-grants-management/grant_external)
 * grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
 * grants *list, select* object privileges on *sequence*
 * grants *create table, create view, create sequence* admin privilege
@@ -246,7 +259,7 @@ CALL util..objects_owned_by('USER_NAME');
 
 ## Generate docs
 
-Documentation is generated extracting comments with a `--` in the beginning of line.
+Documentation is generated extracting comments from lines that starts with a `--`e.
 
 ```sql
 /* This kind of comments will be ignored */

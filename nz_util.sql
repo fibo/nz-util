@@ -7,10 +7,10 @@
 /* Update version number */
 COMMENT ON DATABASE util
 --
---**Version 2013-12-18**
-IS 'Version 2013-12-18, http://www.g14n.info/nz-util/, MIT License';
+--**Version 2014-01-21**
+IS 'Version 2014-01-21, http://documentup.com/fibo/nz-util, MIT License';
 --
--- See [online documentation](http://documentup.com/fibo/nz-util) for latest version.
+--    See [online docs](http://documentup.com/fibo/nz-util) for latest version.
 --
 --
 --# Installation
@@ -575,7 +575,10 @@ BEGIN_PROC
 --* creates group if it does not exists
     CALL util..create_or_update_group(group_name);
 
---* calls [grant_systemview](#grant_systemview)
+--* calls [grant_systemtable](#groups-and-grants-management/grant_systemtable)
+    CALL util..grant_systemtable(group_name);
+
+--* calls [grant_systemview](#groups-and-grants-management/grant_systemview)
     CALL util..grant_systemview(group_name);
 
 --* grants *list, select* object privileges on *table, view, sequence*
@@ -647,6 +650,35 @@ BEGIN_PROC
 END_PROC;
 
 --
+--### grant_systemtable
+--
+--Grant a group to read system tables in current catalog.
+--
+--```sql
+--\c mydatabase
+--CALL util..grant_systemtable('GROUP_NAME');
+--```
+--
+
+CREATE OR REPLACE PROCEDURE grant_systemtable(VARCHAR(100))
+  RETURNS BOOLEAN
+  LANGUAGE NZPLSQL
+AS
+BEGIN_PROC
+  DECLARE
+    group_name ALIAS FOR $1;
+  BEGIN
+--* creates group if it does not exists
+    CALL util..create_or_update_group(group_name);
+
+--* grants *list, select* object privileges on *system table*
+    CALL util..grant_object_privilege(group_name, ' LIST, SELECT ', ' SYSTEM TABLE ');
+
+    RETURN TRUE;
+  END;
+END_PROC;
+
+--
 --### grant_readwrite
 --
 --Grant a group to read and write data in current catalog.
@@ -668,10 +700,10 @@ BEGIN_PROC
 --* creates group if it does not exists
     CALL util..create_or_update_group(group_name);
 
---* calls [grant_readonly](#grant_readonly)
+--* calls [grant_readonly](#groups-and-grants-management/grant_readonly)
     CALL util..grant_readonly(group_name);
 
---* calls [grant_external](#grant_external)
+--* calls [grant_external](#groups-and-grants-management/grant_external)
     CALL util..grant_external(group_name);
 
 --* grants *insert, update, delete, truncate, alter, drop, genstats, groom* object privileges on *table*
@@ -824,7 +856,7 @@ END_PROC;
 --
 --## Generate docs
 --
---Documentation is generated extracting comments with a `--` in the beginning of line.
+--Documentation is generated extracting comments from lines that starts with a `--`e.
 --
 --```sql
 --/* This kind of comments will be ignored */
