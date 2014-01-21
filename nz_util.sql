@@ -856,9 +856,10 @@ END_PROC;
 --
 --## Generate docs
 --
---Documentation is generated extracting comments from lines that starts with a `--`e.
+--Documentation is generated extracting comments from lines that starts with a `--`.
 --
 --```sql
+---- This line will be part of generated documentation
 --/* This kind of comments will be ignored */
 --```
 --
