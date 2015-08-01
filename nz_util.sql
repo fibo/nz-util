@@ -9,9 +9,9 @@
 COMMENT ON DATABASE util
 --
 --**Version 2014-01-21**
-IS 'Version 2014-01-21, http://www.g14n.info/nz-util, MIT License';
+IS 'Version 2014-01-21, http://g14n.info/nz-util, MIT License';
 --
---    See [online docs](http://www.g14n.info/nz-util) for latest version.
+--See [online docs](http://g14n.info/nz-util) for latest version.
 --
 --
 --## Installation
