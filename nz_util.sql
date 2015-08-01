@@ -21,13 +21,13 @@ IS 'Version 2014-01-21, http://g14n.info/nz-util, MIT License';
 --If you are on a Linux box (for example the Netezza frontend itself), you can try with this command
 --
 --```bash
---wget --timestamping http://www.g14n.info/nz-util/nz_util.sql
+--wget --timestamping https://raw.githubusercontent.com/fibo/nz-util/master/nz_util.sql
 --```
 --
 --If it does not work, just point your browser to
 --
 --```
---http://www.g14n.info/nz-util/nz_util.sql
+--https://raw.githubusercontent.com/fibo/nz-util/master/nz_util.sql
 --```
 --
 --and use copy and paste, dude!
